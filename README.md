@@ -24,9 +24,10 @@ See the full sample [.vsixmanifest file](src/source.extension.vsixmanifest).
 The code in this sample contains the concepts:
 
 1. [Custom Tool Window Pane](src/ToolWindows/MessageNavigatorToolWindow.cs)
-2. [XAML control](src/ToolWindows/MessageNavigatorToolWindow.xaml) for the pane
-3. [Custom command](src/Commands/ShowToolWindow.cs) that can show the tool window
-4. [AsyncPackage class](src/MyPackage.cs) that glues it all together
+2. [XAML control](src/ToolWindows/MessageNavigatorToolWindowControl.xaml) for the pane
+3. [Implementation logic](src/ToolWindows/MessageNavigatorToolWindowControl.xaml.cs)
+4. [Custom command](src/Commands/ShowToolWindow.cs) that can show the tool window
+5. [AsyncPackage class](src/MyPackage.cs) that glues it all together
 
 Follow the links above directly into the source code to see how it is all hooked up.
 
