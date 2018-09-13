@@ -14,7 +14,8 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
         public MessageNavigatorToolWindow(MessageNavigatorToolWindowState state)
         {
             Caption = Title;
-            BitmapImageMoniker = KnownMonikers.Search;
+            BitmapResourceID = 400;
+            BitmapIndex = 1;
 
             Content = new MessageNavigatorToolWindowControl(state);
         }
