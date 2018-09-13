@@ -1,0 +1,30 @@
+# common configuration for ALL branches
+image: Visual Studio 2017
+install:
+  - choco install gitversion.portable -pre -y
+test: off
+assembly_info:
+  patch: false
+nuget:
+  disable_publish_on_pr: true
+before_build:
+  - ps: gitversion /l console /output buildserver
+cache:
+  - packages -> **\packages.config
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+
+for:
+-
+  branches:
+# IMPORTANT: Building a TAG is on a branch with the TAG name. So this does not work
+    only:
+      - /\d+\.\d+\.\d+$/
+  build_script:
+    - build.bat /t:Build /v:m
+  skip_non_tags: true
+
+# all other branches
+-
+  build_script:
+    - build.bat /t:Build /v:m
