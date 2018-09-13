@@ -30,6 +30,4 @@ for:
 -
   build_script:
     - build.bat /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /t:Build /v:m
-
-after_test:
-  - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
+    - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
