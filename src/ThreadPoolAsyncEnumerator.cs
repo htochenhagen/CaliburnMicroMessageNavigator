@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace CaliburnMicroMessageNavigator
@@ -24,7 +25,24 @@ namespace CaliburnMicroMessageNavigator
         /// <summary>
         ///  Advances the enumerator to the next element of the collection on a Thread Pool Thread
         /// </summary>
-        public Task<bool> MoveNextAsync() => Task.Run(() => _inner.MoveNext());
+        public Task<bool> MoveNextAsync()
+        {
+            return Task.Run(() =>
+            {
+                var result = false;
+
+                try
+                {
+                    result = _inner.MoveNext();
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e.Message);
+                }
+
+                return result;
+            });
+        }
 
         /// <summary>
         /// Gets the current element in the collection.
