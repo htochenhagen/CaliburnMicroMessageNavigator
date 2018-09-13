@@ -24,13 +24,13 @@
   </Commands>
 
   <Symbols>
-    <GuidSymbol name="guidMyPackage" value="{6e3b2e95-902b-4385-a966-30c06ab3c7a6}" />
+    <GuidSymbol name="guidMyPackage" value="{bcbed547-34b3-4e0d-a0cc-740878b4f9fd}" />
 
     <GuidSymbol name="extensionIcon" value="{4e91967e-612e-4241-9b17-8f12402d337f}">
       <IDSymbol name="extensionIcon1" value="1" />
     </GuidSymbol>
 
-    <GuidSymbol name="guidMyPackageCmdSet" value="{9cc1062b-4c82-46d2-adcb-f5c17d55fb85}">
+    <GuidSymbol name="guidMyPackageCmdSet" value="{33ec4b5c-3d65-4fc4-bc4d-a789d00817c2}">
       <IDSymbol name="ShowToolWindowId" value="0x0100" />
     </GuidSymbol>
   </Symbols>
