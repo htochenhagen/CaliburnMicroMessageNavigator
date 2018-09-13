@@ -12,7 +12,7 @@ namespace CaliburnMicroMessageNavigator
 {
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("Caliburn.Micro.MessageNavigator", "Displays all publications and handlers of 'Caliburn.Micro' message types treated according to the search performed", "1.0", IconResourceID = 400)]
-    [ProvideToolWindow(typeof(MessageNavigatorToolWindow), Style = VsDockStyle.Tabbed, DockedWidth = 300, Window = "DocumentWell", Orientation = ToolWindowOrientation.Left)]
+    [ProvideToolWindow(typeof(MessageNavigatorToolWindow), Style = VsDockStyle.Tabbed, DockedWidth = 300, Window = EnvDTE.Constants.vsWindowKindTaskList, Orientation = ToolWindowOrientation.Left)]
     [Guid("bcbed547-34b3-4e0d-a0cc-740878b4f9fd")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class MyPackage : AsyncPackage
