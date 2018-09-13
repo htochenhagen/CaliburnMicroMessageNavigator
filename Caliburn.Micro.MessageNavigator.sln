@@ -7,7 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaliburnMicroMessageNavigat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EDE420A2-0953-46FE-B91B-92E19703EE05}"
 	ProjectSection(SolutionItems) = preProject
+		before.Caliburn.Micro.MessageNavigator.sln.targets = before.Caliburn.Micro.MessageNavigator.sln.targets
+		build.bat = build.bat
+		CleanUp.ps1 = CleanUp.ps1
+		empty.targets = empty.targets
 		README.md = README.md
+		solution.targets = solution.targets
+		SolutionInfo.cs = SolutionInfo.cs
 	EndProjectSection
 EndProject
 Global
