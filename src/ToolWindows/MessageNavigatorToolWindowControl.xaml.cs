@@ -105,14 +105,14 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
         {
             ListViewPublicationsResults.Items.Clear();
 
-            return await IterateItems(scriptResult, cancellationToken, AddToListViewPublications, WaitForNextPublicationsPageRequestAsync);
+            return await IterateItemsAsync(scriptResult, cancellationToken, AddToListViewPublications, WaitForNextPublicationsPageRequestAsync);
         }
 
         private async Task<int> DisplayHandlersResultAsync(object scriptResult, CancellationToken cancellationToken)
         {
             ListViewHandlersResults.Items.Clear();
 
-            return await IterateItems(scriptResult, cancellationToken, AddToListViewHandlers, WaitForNextHandlersPageRequestAsync);
+            return await IterateItemsAsync(scriptResult, cancellationToken, AddToListViewHandlers, WaitForNextHandlersPageRequestAsync);
         }
 
         private Task WaitForNextPublicationsPageRequestAsync(int pageLimit)
@@ -197,7 +197,7 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
             return newSource.Token;
         }
 
-        private async Task<int> IterateItems(object scriptResult, CancellationToken cancellationToken, Action<object> itemAction, Func<int, Task> waitForNextsPageRequestAction)
+        private static async Task<int> IterateItemsAsync(object scriptResult, CancellationToken cancellationToken, Action<object> itemAction, Func<int, Task> waitForNextsPageRequestAction)
         {
             var count = 0;
             var pageLimit = 1000;
