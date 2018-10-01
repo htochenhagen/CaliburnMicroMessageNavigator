@@ -17,14 +17,38 @@ before_build:
 - ps: >-
     $version_info_json = (gitversion /l console /output json);
     $version_info = (gitversion /output json | ConvertFrom-Json);
+    $env:VERSION = $version_info;
     $env:VERSION_INFO = $version_info;
     $env:VERSION_INFO_SEMVER = $version_info.SemVer;
     $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
-    Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER-$env:APPVEYOR_BUILD_NUMBER";
-    Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion;
+    
+    Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER";
+
+    $vsixManifest = "extension.vsixmanifest";
+    [xml]$vsixXml = Get-Content $vsixManifest;
+
+    $ns = New-Object System.Xml.XmlNamespaceManager $vsixXml.NameTable;
+    $ns.AddNamespace("ns", $vsixXml.DocumentElement.NamespaceURI) | Out-Null;
+
+    $attrVersion = "";
+
+    if ($vsixXml.SelectSingleNode("//ns:Identity", $ns)){ # VS2012 format
+        $attrVersion = $vsixXml.SelectSingleNode("//ns:Identity", $ns).Attributes["Version"];
+    }
+    elseif ($vsixXml.SelectSingleNode("//ns:Version", $ns)){ # VS2010 format
+        $attrVersion = $vsixXml.SelectSingleNode("//ns:Version", $ns);
+    }
+
+    $attrVersion.InnerText = $version_info.SemVer;
+
+    $vsixXml.Save($vsixManifest) | Out-Null;
+
+    $version.ToString() | Write-Host -ForegroundColor Green;
+
     Write-Host "Get GitVersion output = " $version_info_json;
     Write-Host "Set VERSION_INFO_SEMVER = " $env:VERSION_INFO_SEMVER;
     Write-Host "Set APPVEYOR_BUILD_VERSION = " $env:APPVEYOR_BUILD_VERSION;
+    # Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion;
 
   # - ps: gitversion /l console /output buildserver  
   # - ps: $version = $env:GitVersion_SemVer
