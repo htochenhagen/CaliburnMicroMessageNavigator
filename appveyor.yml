@@ -13,7 +13,8 @@ environment:
 nuget:
   disable_publish_on_pr: true
 
-before_build:
+before_build: 
+- ps: >-
     $version_info_json = (gitversion /l console /output json);
     $version_info = (gitversion /output json | ConvertFrom-Json);
     
