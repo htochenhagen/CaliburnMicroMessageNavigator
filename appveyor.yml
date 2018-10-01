@@ -10,8 +10,10 @@ nuget:
   disable_publish_on_pr: true
 
 before_build:
-  - ps: gitversion /l console /output buildserver /updateAssemblyInfo
-  - ps: Update-AppveyorBuild -Version "$env:GitVersion_NuGetVersion"  
+  - ps: gitversion /l console /output buildserver  
+  #/updateAssemblyInfo
+  version: "$env:GitVersion_SemVer"
+  #- ps: Update-AppveyorBuild -Version "$env:GitVersion_SemVer"  
   - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
 cache:
   - packages -> **\packages.config
