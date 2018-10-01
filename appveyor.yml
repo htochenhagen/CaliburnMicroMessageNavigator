@@ -11,8 +11,9 @@ nuget:
 
 before_build:
   - ps: gitversion /l console /output buildserver  
-  - ps: $version = "$env:GitVersion_SemVer"
-  - ps: WRITE-HOST "$version"
+  - ps: $version = $env:GitVersion_SemVer
+  - ps: WRITE-HOST $version
+  - ps: $env:APPVEYOR_BUILD_VERSION = $version
   - ps: WRITE-HOST "$env:APPVEYOR_BUILD_VERSION"
   - ps: Update-AppveyorBuild -Version "$version"
   - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
