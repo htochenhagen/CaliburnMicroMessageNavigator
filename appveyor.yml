@@ -24,7 +24,7 @@ before_build:
     
     Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER";
 
-    $table = Get-ChildItem -Filter *.vsixmanifest -Recurse | Format-Table Name, Length;
+    $table = Get-ChildItem -Filter *.vsixmanifest -Recurse | Format-Table FullName;
     foreach ($row in $table)
     {
       $row;
