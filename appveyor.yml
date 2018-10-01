@@ -19,7 +19,7 @@ before_build:
     $version_info = (gitversion /output json | ConvertFrom-Json);
     $env:VERSION_INFO = $version_info;
     $env:VERSION_INFO_SEMVER = $version_info.SemVer;
-    $env:VERSION_INFO_NUGET = $version_info.NuGetVersion
+    $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
     Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER-$env:APPVEYOR_BUILD_NUMBER";
     Write-Host "Get GitVersion output = " $version_info_json;
     Write-Host "Set VERSION_INFO_SEMVER = " $env:VERSION_INFO_SEMVER;
