@@ -14,7 +14,7 @@ before_build:
   - ps: $version = "$env:GitVersion_SemVer"
   - ps: WRITE-HOST "$version"
   - ps: WRITE-HOST "$env:APPVEYOR_BUILD_VERSION"
-  - ps: Update-AppveyorBuild -Version $version
+  - ps: Update-AppveyorBuild -Version "$version"
   - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
 cache:
   - packages -> **\packages.config
