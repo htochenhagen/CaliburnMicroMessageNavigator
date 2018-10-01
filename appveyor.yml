@@ -24,6 +24,7 @@ for:
       - /\d+\.\d+\.\d+$/
   build_script:
     - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
+    - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
   skip_non_tags: true
 
 # all other branches
