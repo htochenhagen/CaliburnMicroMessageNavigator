@@ -17,17 +17,12 @@ before_build:
 - ps: >-
     $version_info_json = (gitversion /l console /output json);
     $version_info = (gitversion /output json | ConvertFrom-Json);
-    
     $env:VERSION_INFO = $version_info;
-    
     $env:VERSION_INFO_SEMVER = $version_info.SemVer;
-    
     $env:VERSION_INFO_NUGET = $version_info.NuGetVersion
     Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER-$env:APPVEYOR_BUILD_NUMBER";
     Write-Host "Get GitVersion output = " $version_info_json;
-    
     Write-Host "Set VERSION_INFO_SEMVER = " $env:VERSION_INFO_SEMVER;
-    
     Write-Host "Set APPVEYOR_BUILD_VERSION = " $env:APPVEYOR_BUILD_VERSION;
 
   # - ps: gitversion /l console /output buildserver  
