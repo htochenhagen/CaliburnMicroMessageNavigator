@@ -24,7 +24,7 @@ before_build:
     
     Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER";
 
-    $vsixManifest = "extension.vsixmanifest";
+    $vsixManifest = ".\source.extension.vsixmanifest";
     [xml]$vsixXml = Get-Content $vsixManifest;
 
     $ns = New-Object System.Xml.XmlNamespaceManager $vsixXml.NameTable;
