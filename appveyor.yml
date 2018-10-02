@@ -17,15 +17,54 @@ skip_non_tags: true
 
 before_build:
 - ps: >-
-    Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion;
-    $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
-    foreach ($vsixManifest in $manifestFiles)
+    function Vsix-UpdateVsixVersion 
     {
-      Write-Host $vsixManifest.Fullname -ForegroundColor Yellow;  
+        process 
+        {
+          "Updating VSIX version..." | Write-Host  -ForegroundColor Cyan -NoNewline
+            $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
 
-      $vsixXmlAsText = Get-Content $vsixManifest.Fullname;
-      Write-Host $vsixXmlAsText -ForegroundColor Yellow;
+            $vsixManifest = $manifestFiles[$manifestFiles.Count - 1];
+            Write-Host $vsixManifest.Fullname -ForegroundColor Yellow;  
+            [xml]$vsixXml = Get-Content $vsixManifest.Fullname;
+
+            $ns = New-Object System.Xml.XmlNamespaceManager $vsixXml.NameTable;
+            $ns.AddNamespace("ns", $vsixXml.DocumentElement.NamespaceURI) | Out-Null;
+
+            $attrVersion = "";
+            if ($vsixXml.SelectSingleNode("//ns:Identity", $ns)){ # VS2012 format
+                $attrVersion = $vsixXml.SelectSingleNode("//ns:Identity", $ns).Attributes["Version"];
+            }
+            elseif ($vsixXml.SelectSingleNode("//ns:Version", $ns)){ # VS2010 format
+                $attrVersion = $vsixXml.SelectSingleNode("//ns:Version", $ns);
+            }
+
+            $attrVersion.InnerText = $version_info.SemVer;
+
+            $vsixXml.Save($vsixManifest) | Out-Null;
+
+            $vsixXmlAsText = Get-Content $vsixManifest;
+            Write-Host $vsixXmlAsText -ForegroundColor Yellow;
+
+            # return the values to the pipeline
+            New-Object PSObject -Property @{
+                'vsixFilePath' = $vsixManifest.Fullname
+                'Version' = $version_info.SemVer
+            }
+        }
     }
+
+    $version_info_json = (gitversion /l console /output json);
+    $version_info = (gitversion /output json | ConvertFrom-Json);
+    # $env:VERSION = $version_info;
+    # $env:VERSION_INFO = $version_info;
+    # $env:VERSION_INFO_SEMVER = $version_info.SemVer;
+    # $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
+    
+    Vsix-UpdateVsixVersion | Vsix-UpdateBuildVersion;
+    # Vsix-UpdateBuildVersion $version_info.SemVer;
+    # Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER";
+
     Write-Host "Succesfully update manifest version to '$($version_info.SemVer)'" -ForegroundColor Green;
 
 cache:
