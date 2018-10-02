@@ -16,9 +16,8 @@ nuget:
 # skip_non_tags: true
 
 before_build: 
+  - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
   - ps: >-  
-    Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion;
-
     $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
     foreach ($vsixManifest in $manifestFiles)
     {
