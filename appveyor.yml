@@ -21,7 +21,7 @@ before_build:
     {
         process 
         {
-          "Updating VSIX version..." | Write-Host  -ForegroundColor Cyan -NoNewline
+            "Updating VSIX version..." | Write-Host  -ForegroundColor Cyan -NoNewline
             $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
 
             $vsixManifest = $manifestFiles[$manifestFiles.Count - 1];
@@ -43,7 +43,7 @@ before_build:
 
             $vsixXml.Save($vsixManifest) | Out-Null;
 
-            $vsixXmlAsText = Get-Content $vsixManifest;
+            $vsixXmlAsText = Get-Content $vsixManifest.Fullname;
             Write-Host $vsixXmlAsText -ForegroundColor Yellow;
 
             # return the values to the pipeline
