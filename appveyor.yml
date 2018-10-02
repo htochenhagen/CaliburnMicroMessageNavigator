@@ -50,8 +50,8 @@ before_build:
     $vsixXml.Save($vsixManifest) | Out-Null;
 
     [xml]$vsixXml = Get-Content $vsixManifest;
-
-    Write-Host $vsixXml -ForegroundColor Yellow;
+    WriteXmlToScreen $vsixXml
+    #Write-Host $vsixXml -ForegroundColor Yellow;
 
     Write-Host "Succesfully update manifest version to '$($version_info.SemVer)'" -ForegroundColor Green;
 
