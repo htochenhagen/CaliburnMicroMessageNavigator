@@ -74,7 +74,8 @@ before_build:
     $env:VERSION_INFO_SEMVER = $version_info.SemVer;
     $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
     
-    Vsix-UpdateVsixVersion $version_info.SemVer | Vsix-UpdateBuildVersion;
+    Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion;
+    #Vsix-UpdateVsixVersion $version_info.SemVer | Vsix-UpdateBuildVersion;
 
 cache:
   - packages -> **\packages.config
