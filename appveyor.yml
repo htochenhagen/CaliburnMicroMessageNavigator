@@ -32,8 +32,8 @@ cache:
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
 
-#build_script:
-  # - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
+build_script:
+  - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
 #after_build:
   # - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
