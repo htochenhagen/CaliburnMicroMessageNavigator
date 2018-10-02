@@ -22,7 +22,7 @@ before_build:
         [cmdletbinding()]
         param (
           [Parameter(Position=0, Mandatory=1,ValueFromPipelineByPropertyName=$true)]
-          [Version[]]$version,
+          [Version]$version,
           [switch]$updateBuildVersion = $true
         )      
         process 
@@ -78,7 +78,7 @@ before_build:
     Write-Host "NuGetVersion = $($version_info.NuGetVersion)" -ForegroundColor Red;
     
     #Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion;
-    Vsix-UpdateVsixVersion $version_info.NuGetVersion | Vsix-UpdateBuildVersion;
+    Vsix-UpdateVsixVersion $version_info.SemVer | Vsix-UpdateBuildVersion;
 
 cache:
   - packages -> **\packages.config
