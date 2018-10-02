@@ -17,7 +17,21 @@ nuget:
 
 before_build: 
   - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
-  - ps: >-
+
+cache:
+  - packages -> **\packages.config
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+
+build_script:
+- ps: >-
+    $version_info_json = (gitversion /l console /output json);
+    $version_info = (gitversion /output json | ConvertFrom-Json);
+    $env:VERSION = $version_info;
+    $env:VERSION_INFO = $version_info;
+    $env:VERSION_INFO_SEMVER = $version_info.SemVer;
+    $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
+    
     $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
     foreach ($vsixManifest in $manifestFiles)
     {
@@ -26,13 +40,6 @@ before_build:
       $vsixXmlAsText = Get-Content $vsixManifest;
       Write-Host $vsixXmlAsText -ForegroundColor Yellow;
     }        
-
-cache:
-  - packages -> **\packages.config
-  - C:\ProgramData\chocolatey\bin -> appveyor.yml
-  - C:\ProgramData\chocolatey\lib -> appveyor.yml
-
-build_script:
   - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
 #after_build:
