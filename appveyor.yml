@@ -6,26 +6,26 @@ install:
 test: off
 assembly_info:
   patch: false
-environment:
-  VERSION_INFO_SEMVER: null
-  VERSION_INFO: null
-  VERSION_INFO_NUGET: null
+# environment:
+#   VERSION_INFO_SEMVER: null
+#   VERSION_INFO: null
+#   VERSION_INFO_NUGET: null
 nuget:
   disable_publish_on_pr: true
 # Start builds on tags only (GitHub and BitBucket)
 # skip_non_tags: true
 
-before_build: 
-  - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
-  - ps: >-  
-    $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
-    foreach ($vsixManifest in $manifestFiles)
-    {
-      Write-Host $vsixManifest.Fullname -ForegroundColor Yellow;  
+# before_build: 
+#   - ps: Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion
+#   - ps: >-  
+#     $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
+#     foreach ($vsixManifest in $manifestFiles)
+#     {
+#       Write-Host $vsixManifest.Fullname -ForegroundColor Yellow;  
 
-      $vsixXmlAsText = Get-Content $vsixManifest;
-      Write-Host $vsixXmlAsText -ForegroundColor Yellow;
-    }        
+#       $vsixXmlAsText = Get-Content $vsixManifest;
+#       Write-Host $vsixXmlAsText -ForegroundColor Yellow;
+#     }        
 
 cache:
   - packages -> **\packages.config
