@@ -24,7 +24,7 @@ cache:
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
 
 build_script:
-- ps: >-
+  - ps: >-
     $version_info_json = (gitversion /l console /output json);
     $version_info = (gitversion /output json | ConvertFrom-Json);
     $env:VERSION = $version_info;
@@ -39,7 +39,8 @@ build_script:
 
       $vsixXmlAsText = Get-Content $vsixManifest;
       Write-Host $vsixXmlAsText -ForegroundColor Yellow;
-    }        
+    }
+    Write-Host "Succesfully update manifest version to '$($version_info.SemVer)'" -ForegroundColor Green;
   - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
 #after_build:
