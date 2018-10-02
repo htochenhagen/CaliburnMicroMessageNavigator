@@ -59,10 +59,10 @@ before_build:
                 }
 
                 if ($versionType -eq "build"){
-                    $version = New-Object Version 1,1,35
+                    $version = New-Object Version ([int]$version_info.Major),([int]$version_info.Minor),([int]$version_info.Patch),$buildNumber
                 }
                 elseif ($versionType -eq "revision"){
-                    $version = New-Object Version 1,1,35,$buildNumber
+                    $version = New-Object Version ([int]$version_info.Major),([int]$version_info.Minor),([int]$version_info.Patch)
                 }
 
                 $attrVersion.InnerText = $version
