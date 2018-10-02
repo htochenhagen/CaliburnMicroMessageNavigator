@@ -58,13 +58,7 @@ before_build:
                     $version = $attrVersion.InnerText
                 }
 
-                if ($versionType -eq "build"){
-                    $version = New-Object Version ([int]$version_info.Major),([int]$version_info.Minor),([int]$version_info.Patch),$buildNumber
-                }
-                elseif ($versionType -eq "revision"){
-                    $version = New-Object Version ([int]$version_info.Major),([int]$version_info.Minor),([int]$version_info.Patch)
-                }
-
+                $version = New-Object Version ([int]$version_info.Major),([int]$version_info.Minor),([int]$version_info.Patch)
                 $attrVersion.InnerText = $version
 
                 $vsixXml.Save($vsixManifest) | Out-Null
