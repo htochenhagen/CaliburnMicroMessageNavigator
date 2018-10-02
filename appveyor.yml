@@ -79,7 +79,7 @@ before_build:
         }
     }
 
-    # $version_info_json = (gitversion /l console /output json);
+    $version_info_json = (gitversion /l console /output json);
     $gitversion_info = (gitversion /output json | ConvertFrom-Json);
     # $env:VERSION = $gitversion_info;
     # $env:VERSION_INFO = $gitversion_info;
