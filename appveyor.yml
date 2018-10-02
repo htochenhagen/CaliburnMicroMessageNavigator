@@ -59,10 +59,12 @@ before_build:
             $vsixXmlAsText = Get-Content $vsixManifest.Fullname;
             Write-Host $vsixXmlAsText -ForegroundColor Yellow;
 
+            [Version]$versionObject = New-Object Version($version)
+
             # return the values to the pipeline
             New-Object PSObject -Property @{
                 'vsixFilePath' = $vsixManifest.Fullname
-                'Version' = $version
+                'Version' = $versionObject
             }
         }
     }
