@@ -6,10 +6,6 @@ install:
 test: off
 assembly_info:
   patch: false
-# environment:
-#   VERSION_INFO_SEMVER: null
-#   VERSION_INFO: null
-#   VERSION_INFO_NUGET: null
 nuget:
   disable_publish_on_pr: true
 # Start builds on tags only (GitHub and BitBucket)
@@ -81,14 +77,7 @@ before_build:
 
     $version_info_json = (gitversion /l console /output json);
     $gitversion_info = (gitversion /output json | ConvertFrom-Json);
-    # $env:VERSION = $gitversion_info;
-    # $env:VERSION_INFO = $gitversion_info;
-    # $env:VERSION_INFO_SEMVER = $gitversion_info.SemVer;
-    # $env:VERSION_INFO_NUGET = $gitversion_info.NuGetVersion;
 
-    # Write-Host "SemVer = $($gitversion_info.SemVer)" -ForegroundColor Red;
-    # Write-Host "NuGetVersion = $($gitversion_info.NuGetVersion)" -ForegroundColor Red;
-    
     Vsix-UpdateVsixVersion | Vsix-UpdateBuildVersion;
 
 cache:
