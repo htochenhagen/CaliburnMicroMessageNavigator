@@ -13,7 +13,7 @@ assembly_info:
 nuget:
   disable_publish_on_pr: true
 # Start builds on tags only (GitHub and BitBucket)
- skip_non_tags: true
+skip_non_tags: true
 
 before_build:
   - ps: >-
