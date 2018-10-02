@@ -77,7 +77,6 @@ before_build:
     Write-Host "SemVer = $($version_info.SemVer)" -ForegroundColor Red;
     Write-Host "NuGetVersion = $($version_info.NuGetVersion)" -ForegroundColor Red;
     
-    #Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion;
     Vsix-UpdateVsixVersion $version_info.SemVer | Vsix-UpdateBuildVersion;
 
 cache:
