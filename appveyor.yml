@@ -6,10 +6,10 @@ install:
 test: off
 assembly_info:
   patch: false
-environment:
-  VERSION_INFO_SEMVER: null
-  VERSION_INFO: null
-  VERSION_INFO_NUGET: null
+# environment:
+#   VERSION_INFO_SEMVER: null
+#   VERSION_INFO: null
+#   VERSION_INFO_NUGET: null
 nuget:
   disable_publish_on_pr: true
 # Start builds on tags only (GitHub and BitBucket)
@@ -19,41 +19,37 @@ before_build:
 - ps: >-
     $version_info_json = (gitversion /l console /output json);
     $version_info = (gitversion /output json | ConvertFrom-Json);
-    $env:VERSION = $version_info;
-    $env:VERSION_INFO = $version_info;
-    $env:VERSION_INFO_SEMVER = $version_info.SemVer;
-    $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
+    # $env:VERSION = $version_info;
+    # $env:VERSION_INFO = $version_info;
+    # $env:VERSION_INFO_SEMVER = $version_info.SemVer;
+    # $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
     
-    Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER";
+    Vsix-UpdateBuildVersion $version_info.SemVer;
+    # Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER";
 
-    $table = Get-ChildItem -Filter *.vsixmanifest -Recurse | Format-Table FullName;
-    foreach ($row in $table)
+    $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
+    foreach ($vsixManifest in $manifestFiles)
     {
-      $row;
+      [xml]$vsixXml = Get-Content $vsixManifest;
+
+      $ns = New-Object System.Xml.XmlNamespaceManager $vsixXml.NameTable;
+      $ns.AddNamespace("ns", $vsixXml.DocumentElement.NamespaceURI) | Out-Null;
+
+      $attrVersion = "";
+      if ($vsixXml.SelectSingleNode("//ns:Identity", $ns)){ # VS2012 format
+          $attrVersion = $vsixXml.SelectSingleNode("//ns:Identity", $ns).Attributes["Version"];
+      }
+      elseif ($vsixXml.SelectSingleNode("//ns:Version", $ns)){ # VS2010 format
+          $attrVersion = $vsixXml.SelectSingleNode("//ns:Version", $ns);
+      }
+
+      $attrVersion.InnerText = $version_info.SemVer;
+
+      $vsixXml.Save($vsixManifest) | Out-Null;
     }    
 
-    $vsixManifest = "C:\projects\caliburnmicromessagenavigator\src\source.extension.vsixmanifest";
-    [xml]$vsixXml = Get-Content $vsixManifest;
-
-    $ns = New-Object System.Xml.XmlNamespaceManager $vsixXml.NameTable;
-    $ns.AddNamespace("ns", $vsixXml.DocumentElement.NamespaceURI) | Out-Null;
-
-    $attrVersion = "";
-
-    if ($vsixXml.SelectSingleNode("//ns:Identity", $ns)){ # VS2012 format
-        $attrVersion = $vsixXml.SelectSingleNode("//ns:Identity", $ns).Attributes["Version"];
-    }
-    elseif ($vsixXml.SelectSingleNode("//ns:Version", $ns)){ # VS2010 format
-        $attrVersion = $vsixXml.SelectSingleNode("//ns:Version", $ns);
-    }
-
-    $attrVersion.InnerText = $version_info.SemVer;
-
-    $vsixXml.Save($vsixManifest) | Out-Null;
-    Vsix-UpdateBuildVersion $version_info.SemVer;
-
-    $vsixXmlAsText = Get-Content $vsixManifest;
-    Write-Host $vsixXmlAsText -ForegroundColor Yellow;
+    # $vsixXmlAsText = Get-Content $vsixManifest;
+    # Write-Host $vsixXmlAsText -ForegroundColor Yellow;
 
     Write-Host "Succesfully update manifest version to '$($version_info.SemVer)'" -ForegroundColor Green;
 
@@ -66,4 +62,4 @@ build_script:
   - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
 after_build:
-  # - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
+  - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
