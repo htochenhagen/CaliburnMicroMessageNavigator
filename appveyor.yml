@@ -19,6 +19,10 @@ before_build:
 - ps: >-
     function Vsix-UpdateVsixVersion 
     {
+        param (
+          [Parameter(Position=0, Mandatory=1,ValueFromPipelineByPropertyName=$true)]
+          [Version[]]$version,
+        )      
         process 
         {
             "Updating VSIX version..." | Write-Host  -ForegroundColor Cyan -NoNewline
@@ -39,7 +43,7 @@ before_build:
                 $attrVersion = $vsixXml.SelectSingleNode("//ns:Version", $ns);
             }
 
-            $attrVersion.InnerText = $version_info.SemVer;
+            $attrVersion.InnerText = $version;
 
             $vsixXml.Save($vsixManifest) | Out-Null;
 
@@ -49,7 +53,7 @@ before_build:
             # return the values to the pipeline
             New-Object PSObject -Property @{
                 'vsixFilePath' = $vsixManifest.Fullname
-                'Version' = $version_info.SemVer
+                'Version' = $version
             }
         }
     }
@@ -61,7 +65,7 @@ before_build:
     # $env:VERSION_INFO_SEMVER = $version_info.SemVer;
     # $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
     
-    Vsix-UpdateVsixVersion | Vsix-UpdateBuildVersion;
+    Vsix-UpdateVsixVersion $version_info.SemVer | Vsix-UpdateBuildVersion;
     # Vsix-UpdateBuildVersion $version_info.SemVer;
     # Update-AppveyorBuild -Version "$env:VERSION_INFO_SEMVER";
 
@@ -75,5 +79,5 @@ cache:
 build_script:
   - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
-#after_build:
-  # - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
+after_build:
+  - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
