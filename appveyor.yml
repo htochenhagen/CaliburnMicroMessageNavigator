@@ -6,10 +6,10 @@ install:
 test: off
 assembly_info:
   patch: false
-environment:
-  VERSION_INFO_SEMVER: null
-  VERSION_INFO: null
-  VERSION_INFO_NUGET: null
+# environment:
+#   VERSION_INFO_SEMVER: null
+#   VERSION_INFO: null
+#   VERSION_INFO_NUGET: null
 nuget:
   disable_publish_on_pr: true
 # Start builds on tags only (GitHub and BitBucket)
@@ -35,7 +35,7 @@ before_build:
         process {
             foreach($manifestFile in $manifestFilePath)
             {
-                "Incrementing VSIX version..." | Write-Host  -ForegroundColor Cyan -NoNewline
+                "Updating VSIX version..." | Write-Host  -ForegroundColor Cyan -NoNewline
                 $matches = (Get-ChildItem $manifestFile -Recurse)
                 $vsixManifest = $matches[$matches.Count - 1] # Get the last one which matches the top most file in the recursive matches
                 [xml]$vsixXml = Get-Content $vsixManifest
@@ -58,7 +58,7 @@ before_build:
                     $version = $attrVersion.InnerText
                 }
 
-                $version = New-Object Version ([int]$version_info.Major),([int]$version_info.Minor),([int]$version_info.Patch)
+                $version = New-Object Version ([int]$gitversion_info.Major),([int]$gitversion_info.Minor),([int]$gitversion_info.Patch)
                 $attrVersion.InnerText = $version
 
                 $vsixXml.Save($vsixManifest) | Out-Null
@@ -79,15 +79,15 @@ before_build:
         }
     }
 
-    $version_info_json = (gitversion /l console /output json);
-    $version_info = (gitversion /output json | ConvertFrom-Json);
-    $env:VERSION = $version_info;
-    $env:VERSION_INFO = $version_info;
-    $env:VERSION_INFO_SEMVER = $version_info.SemVer;
-    $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
+    # $version_info_json = (gitversion /l console /output json);
+    $gitversion_info = (gitversion /output json | ConvertFrom-Json);
+    # $env:VERSION = $gitversion_info;
+    # $env:VERSION_INFO = $gitversion_info;
+    # $env:VERSION_INFO_SEMVER = $gitversion_info.SemVer;
+    # $env:VERSION_INFO_NUGET = $gitversion_info.NuGetVersion;
 
-    Write-Host "SemVer = $($version_info.SemVer)" -ForegroundColor Red;
-    Write-Host "NuGetVersion = $($version_info.NuGetVersion)" -ForegroundColor Red;
+    # Write-Host "SemVer = $($gitversion_info.SemVer)" -ForegroundColor Red;
+    # Write-Host "NuGetVersion = $($gitversion_info.NuGetVersion)" -ForegroundColor Red;
     
     Vsix-UpdateVsixVersion | Vsix-UpdateBuildVersion;
 
