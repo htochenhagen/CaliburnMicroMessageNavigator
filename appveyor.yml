@@ -12,6 +12,8 @@ environment:
   VERSION_INFO_NUGET: null
 nuget:
   disable_publish_on_pr: true
+# Start builds on tags only (GitHub and BitBucket)
+skip_non_tags: true
 
 before_build: 
 - ps: >-
@@ -48,10 +50,10 @@ before_build:
     $attrVersion.InnerText = $version_info.SemVer;
 
     $vsixXml.Save($vsixManifest) | Out-Null;
+    Vsix-UpdateBuildVersion $version_info.SemVer;
 
-    [xml]$vsixXml = Get-Content $vsixManifest;
-    WriteXmlToScreen $vsixXml
-    #Write-Host $vsixXml -ForegroundColor Yellow;
+    $vsixXmlAsText = Get-Content $vsixManifest;
+    Write-Host $vsixXmlAsText -ForegroundColor Yellow;
 
     Write-Host "Succesfully update manifest version to '$($version_info.SemVer)'" -ForegroundColor Green;
 
@@ -60,20 +62,8 @@ cache:
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
 
-for:
--
-  branches:
-# IMPORTANT: Building a TAG is on a branch with the TAG name. So this does not work
-    only:
-      - /\d+\.\d+\.\d+$/
-  build_script:
-    - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
-  skip_non_tags: true
+build_script:
+  - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
-# all other branches
--
-  build_script:
-    - build.bat /t:Build /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
- 
 after_build:
   # - ps: Vsix-PushArtifacts | Vsix-PublishToGallery
