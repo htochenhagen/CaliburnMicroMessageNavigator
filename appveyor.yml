@@ -49,7 +49,11 @@ before_build:
 
     $vsixXml.Save($vsixManifest) | Out-Null;
 
-    Write-Host "Succesfully update manifest version to '$version_info.SemVer'" -ForegroundColor Green;
+    [xml]$vsixXml = Get-Content $vsixManifest;
+
+    Write-Host $vsixXml -ForegroundColor Yellow;
+
+    Write-Host "Succesfully update manifest version to '$($version_info.SemVer)'" -ForegroundColor Green;
 
 cache:
   - packages -> **\packages.config
