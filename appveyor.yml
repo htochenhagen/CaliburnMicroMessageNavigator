@@ -73,6 +73,9 @@ before_build:
     $env:VERSION_INFO = $version_info;
     $env:VERSION_INFO_SEMVER = $version_info.SemVer;
     $env:VERSION_INFO_NUGET = $version_info.NuGetVersion;
+
+    Write-Host "SemVer = $($version_info.SemVer)" -ForegroundColor Red;
+    Write-Host "NuGetVersion = $($version_info.NuGetVersion)" -ForegroundColor Red;
     
     Vsix-IncrementVsixVersion | Vsix-UpdateBuildVersion;
     #Vsix-UpdateVsixVersion $version_info.SemVer | Vsix-UpdateBuildVersion;
