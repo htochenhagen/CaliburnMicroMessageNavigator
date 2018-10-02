@@ -23,7 +23,7 @@ before_build:
     {
       Write-Host $vsixManifest.Fullname -ForegroundColor Yellow;  
 
-      $vsixXmlAsText = Get-Content $vsixManifest;
+      $vsixXmlAsText = Get-Content $vsixManifest.Fullname;
       Write-Host $vsixXmlAsText -ForegroundColor Yellow;
     }
     Write-Host "Succesfully update manifest version to '$($version_info.SemVer)'" -ForegroundColor Green;
