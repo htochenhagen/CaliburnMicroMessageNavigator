@@ -13,13 +13,13 @@ assembly_info:
 nuget:
   disable_publish_on_pr: true
 # Start builds on tags only (GitHub and BitBucket)
-# skip_non_tags: true
+ skip_non_tags: true
 
-before_build: 
+before_build:
   - ps: >-
-    Vsix-IncrementVsixVersion;
-    Vsix-UpdateBuildVersion;
-    
+    # Vsix-IncrementVsixVersion;
+    # Vsix-UpdateBuildVersion;
+
     $manifestFiles = Get-ChildItem -Filter *.vsixmanifest -Recurse;
     foreach ($vsixManifest in $manifestFiles)
     {
