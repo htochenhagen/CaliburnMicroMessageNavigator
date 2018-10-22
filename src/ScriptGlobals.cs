@@ -8,13 +8,16 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CaliburnMicroMessageNavigator
 {
-    public class ScriptGlobals
+    public class ScriptGlobals : IDisposable
     {
+        public event EventHandler<object> SolutionOpened;
         private Workspace _workspace;
 
         public ScriptGlobals(CancellationToken cancellationToken)
         {
             CancellationToken = cancellationToken;
+
+            RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened += SolutionEventsOnOpened;
 
             #region Test Queries
 
@@ -38,6 +41,12 @@ namespace CaliburnMicroMessageNavigator
             //}).ToList();
 
             #endregion
+        }
+
+        private void SolutionEventsOnOpened()
+        {
+            OnSolutionOpened();
+            RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened -= SolutionEventsOnOpened;
         }
 
         /// <summary>
@@ -65,6 +74,7 @@ namespace CaliburnMicroMessageNavigator
 
         public Document ActiveDocument => RoslynVisxHelpers.GetCodeAnalysisDocument();
 
+
         /// <summary>
         ///     Returns all SyntaxNodes for all the Documents for all Projects in the current Solution
         /// </summary>
@@ -77,6 +87,35 @@ namespace CaliburnMicroMessageNavigator
             .Where(ie =>
                 Regex.Match(ie.Expression.ToString(), "publish.*(thread)?", RegexOptions.IgnoreCase).Success);
 
+        public IEnumerable<string> AllPublicationsTypes => AllPublications.Select(p =>
+        {
+            var expression = p.ArgumentList.Arguments.First().Expression;
+            var sematicModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
+                .GetSemanticModelAsync().Result;
+            var typeInfo = sematicModel.GetTypeInfo(expression);
+            var fullTypeName = typeInfo.Type;
+            var splittedType = fullTypeName.ToString().Split('.');
+            if (splittedType.Length > 1)
+            {
+                var type = splittedType.Last();
+                return type;
+            }
+
+            return null;
+        }).Where(t => t != null).Distinct();
+
         public CancellationToken CancellationToken { get; }
+
+        public void Dispose()
+        {
+            RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened -= SolutionEventsOnOpened;
+
+            _workspace?.Dispose();
+        }
+
+        protected virtual void OnSolutionOpened()
+        {
+            SolutionOpened?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

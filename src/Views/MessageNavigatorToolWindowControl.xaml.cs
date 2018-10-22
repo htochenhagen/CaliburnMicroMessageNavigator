@@ -6,15 +6,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using CaliburnMicroMessageNavigator.ToolWindows;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Scripting;
 
-namespace CaliburnMicroMessageNavigator.ToolWindows
+namespace CaliburnMicroMessageNavigator.Views
 {
     public partial class MessageNavigatorToolWindowControl
     {
-        public MessageNavigatorToolWindowState State { get; }
         private CancellationTokenSource _cancellationTokenSource;
+        private readonly ScriptGlobals _scriptGlobals;
 
         public MessageNavigatorToolWindowControl(MessageNavigatorToolWindowState state)
         {
@@ -22,12 +23,23 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
             InitializeComponent();
 
             StatusLabel.Content = "Ready";
+
+            _scriptGlobals = new ScriptGlobals(ResetCancellationToken());
+            _scriptGlobals.SolutionOpened += ScriptGlobalsOnSolutionOpened;
         }
+
+        private void ScriptGlobalsOnSolutionOpened(object sender, object e)
+        {
+            SearchComboBox.ItemsSource = _scriptGlobals.AllPublicationsTypes.ToList();
+        }
+
+        public MessageNavigatorToolWindowState State { get; }
 
         private async void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             await ExecuteSearchAsync();
         }
+
         private void CancelButton_OnClick(object sender, RoutedEventArgs e)
         {
             _cancellationTokenSource.Cancel();
@@ -42,9 +54,9 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
                 ListViewHandlersResults.Items.Clear();
 
                 var cancellationToken = ResetCancellationToken();
-                
-                int publicationsCount = await ExecutePublicationsSearchAsync(cancellationToken);
-                int handlersCount = await ExecuteHandlersSearchAsync(cancellationToken);
+
+                var publicationsCount = await ExecutePublicationsSearchAsync(cancellationToken);
+                var handlersCount = await ExecuteHandlersSearchAsync(cancellationToken);
 
                 SetStatusMessage($"{publicationsCount} publications and {handlersCount} handlers found.");
             }
@@ -69,13 +81,15 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
                 if (splittedType.Length > 1)
                 {
                     var type = fullTypeName.ToString().Split('.').Last();
-                    return System.Text.RegularExpressions.Regex.Match(type, """ + SearchTextBox.Text + @""", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success;
+                    return System.Text.RegularExpressions.Regex.Match(type, """ + SearchComboBox.Text +
+                @""", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success;
                 }
                 return false;
             })";
             try
             {
-                var scriptResult = await ScriptRunner.RunScriptAsync(searchExpression, new ScriptGlobals(cancellationToken), cancellationToken);
+                var scriptResult = await ScriptRunner.RunScriptAsync(searchExpression,
+                    new ScriptGlobals(cancellationToken), cancellationToken);
 
                 return await DisplayPublicationsResultAsync(scriptResult, cancellationToken);
             }
@@ -95,10 +109,11 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
         {
             //var searchExpression = SearchTextBox.Text;
             var searchExpression =
-                $"AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == \"Handle\" && System.Text.RegularExpressions.Regex.Match(md.ParameterList.Parameters.Last().Type.ToString(), \"{SearchTextBox.Text}\", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success)";
+                $"AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == \"Handle\" && System.Text.RegularExpressions.Regex.Match(md.ParameterList.Parameters.Last().Type.ToString(), \"{SearchComboBox.Text}\", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success)";
             try
             {
-                var scriptResult = await ScriptRunner.RunScriptAsync(searchExpression, new ScriptGlobals(cancellationToken), cancellationToken);
+                var scriptResult = await ScriptRunner.RunScriptAsync(searchExpression,
+                    new ScriptGlobals(cancellationToken), cancellationToken);
 
                 return await DisplayHandlersResultAsync(scriptResult, cancellationToken);
             }
@@ -118,22 +133,24 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
         {
             ListViewPublicationsResults.Items.Clear();
 
-            return await IterateItemsAsync(scriptResult, cancellationToken, AddToListViewPublications, WaitForNextPublicationsPageRequestAsync);
+            return await IterateItemsAsync(scriptResult, cancellationToken, AddToListViewPublications,
+                WaitForNextPublicationsPageRequestAsync);
         }
 
         private async Task<int> DisplayHandlersResultAsync(object scriptResult, CancellationToken cancellationToken)
         {
             ListViewHandlersResults.Items.Clear();
 
-            return await IterateItemsAsync(scriptResult, cancellationToken, AddToListViewHandlers, WaitForNextHandlersPageRequestAsync);
+            return await IterateItemsAsync(scriptResult, cancellationToken, AddToListViewHandlers,
+                WaitForNextHandlersPageRequestAsync);
         }
 
         private Task WaitForNextPublicationsPageRequestAsync(int pageLimit)
         {
             var moreItemsTaskCompletionSource = new TaskCompletionSource<bool>();
-            var moreItemsListViewItem = new ListViewItem()
+            var moreItemsListViewItem = new ListViewItem
             {
-                Content = $"More than {pageLimit } publications found, click to fetch more"
+                Content = $"More than {pageLimit} publications found, click to fetch more"
             };
             moreItemsListViewItem.MouseUp += (sender, args) =>
             {
@@ -149,9 +166,9 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
         private Task WaitForNextHandlersPageRequestAsync(int pageLimit)
         {
             var moreItemsTaskCompletionSource = new TaskCompletionSource<bool>();
-            var moreItemsListViewItem = new ListViewItem()
+            var moreItemsListViewItem = new ListViewItem
             {
-                Content = $"More than {pageLimit } handlers found, click to fetch more"
+                Content = $"More than {pageLimit} handlers found, click to fetch more"
             };
             moreItemsListViewItem.MouseUp += (sender, args) =>
             {
@@ -181,7 +198,7 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
             ListViewHandlersResults.Items.Clear();
             foreach (var diagnostic in diagnostics)
             {
-                var item = new DiagnosticListItem(diagnostic, SearchTextBox);
+                var item = new DiagnosticListItem(diagnostic, new TextBox());
                 ListViewHandlersResults.Items.Add(item);
             }
         }
@@ -191,13 +208,13 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
             ListViewPublicationsResults.Items.Clear();
             foreach (var diagnostic in diagnostics)
             {
-                var item = new DiagnosticListItem(diagnostic, SearchTextBox);
+                var item = new DiagnosticListItem(diagnostic, new TextBox());
                 ListViewPublicationsResults.Items.Add(item);
             }
         }
 
         /// <summary>
-        /// Cancells any pending operation and creates a new CancellationToken for a new Cancellable operation
+        ///     Cancells any pending operation and creates a new CancellationToken for a new Cancellable operation
         /// </summary>
         private CancellationToken ResetCancellationToken()
         {
@@ -210,7 +227,8 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
             return newSource.Token;
         }
 
-        private static async Task<int> IterateItemsAsync(object scriptResult, CancellationToken cancellationToken, Action<object> itemAction, Func<int, Task> waitForNextsPageRequestAction)
+        private static async Task<int> IterateItemsAsync(object scriptResult, CancellationToken cancellationToken,
+            Action<object> itemAction, Func<int, Task> waitForNextsPageRequestAction)
         {
             var count = 0;
             var pageLimit = 1000;
@@ -252,26 +270,17 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
         private static ListViewItem CreateFoundResult(object item)
         {
             var syntaxNodeOrToken = RoslynHelpers.AsSyntaxNodeOrToken(item);
-            if (syntaxNodeOrToken != null)
-            {
-                return new SyntaxNodeOrTokenListItem(syntaxNodeOrToken.Value);
-            }
+            if (syntaxNodeOrToken != null) return new SyntaxNodeOrTokenListItem(syntaxNodeOrToken.Value);
 
-            return new ListViewItem() {Content = item?.ToString() ?? "<null>"};
+            return new ListViewItem {Content = item?.ToString() ?? "<null>"};
         }
 
         private static IEnumerable<object> MakeEnumerable(object input)
         {
-            if (input is IEnumerable enumerable && !(input is string))
-            {
-                // If the item is Enumerable we return it as is
-                return enumerable.Cast<object>();
-            }
+            if (input is IEnumerable enumerable && !(input is string)) return enumerable.Cast<object>();
 
             // If not we wrap it in an Enumerable with a single item
-            return new[] { input };
+            return new[] {input};
         }
-
     }
-
 }

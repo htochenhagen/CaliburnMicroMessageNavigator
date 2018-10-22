@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="CaliburnMicroMessageNavigator.ToolWindows.MessageNavigatorToolWindowControl"
+    x:Class="CaliburnMicroMessageNavigator.Views.MessageNavigatorToolWindowControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -36,11 +36,12 @@
             <Label Style="{StaticResource CommonStyle}">
                 Message Type:
             </Label>
-            <TextBox
-                x:Name="SearchTextBox"
+
+            <ComboBox
+                x:Name="SearchComboBox"
                 MinWidth="250"
-                behaviours:TextBoxFocusBehavior.IsWatermarkEnabled="true"
-                behaviours:TextBoxFocusBehavior.WatermarkText="Please enter message type here (regex usage is allowed)"
+                IsTextSearchEnabled="True"
+                IsEditable="True"
                 Style="{StaticResource CommonStyle}" />
             <Button
                 x:Name="SearchButton"

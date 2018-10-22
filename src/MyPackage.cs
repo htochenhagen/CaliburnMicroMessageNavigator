@@ -15,6 +15,7 @@ namespace CaliburnMicroMessageNavigator
     [ProvideToolWindow(typeof(MessageNavigatorToolWindow), Style = VsDockStyle.Tabbed, DockedWidth = 300, Window = EnvDTE.Constants.vsWindowKindTaskList, Orientation = ToolWindowOrientation.Left)]
     [Guid("bcbed547-34b3-4e0d-a0cc-740878b4f9fd")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     public sealed class MyPackage : AsyncPackage
     {
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)

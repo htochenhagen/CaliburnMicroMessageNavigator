@@ -11,12 +11,11 @@ namespace CaliburnMicroMessageNavigator
 {
     internal class RoslynVisxHelpers
     {
-        private static EnvDTE80.DTE2 Dte2 => Package.GetGlobalService(typeof(SDTE)) as EnvDTE80.DTE2;
+        public static EnvDTE80.DTE2 Dte2 { get; } = Package.GetGlobalService(typeof(SDTE)) as EnvDTE80.DTE2;
 
         public static Workspace GetWorkspace()
         {
             if (!Dte2?.Solution?.IsOpen ?? false) throw new InvalidOperationException("No Solution is opened");
-
             var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
             return componentModel?.GetService<VisualStudioWorkspace>();
         }
