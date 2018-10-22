@@ -59,7 +59,20 @@ namespace CaliburnMicroMessageNavigator.ToolWindows
         {
             //var searchExpression = SearchTextBox.Text;
             var searchExpression =
-                $"AllNodes.OfType<InvocationExpressionSyntax>().Where(ie => System.Text.RegularExpressions.Regex.Match(ie.Expression.ToString(), \"publish.*(thread)?\", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success && System.Text.RegularExpressions.Regex.Match(ie.ArgumentList.Arguments.First().Expression.ToString(), \"{SearchTextBox.Text}\", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success)";
+                @"AllPublications.Where(ie =>
+            {
+                var expression = ie.ArgumentList.Arguments.First().Expression;
+                var sematicModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree).GetSemanticModelAsync().Result;
+                var typeInfo = sematicModel.GetTypeInfo(expression);
+                var fullTypeName = typeInfo.Type;
+                var splittedType = fullTypeName.ToString().Split('.');
+                if (splittedType.Length > 1)
+                {
+                    var type = fullTypeName.ToString().Split('.').Last();
+                    return System.Text.RegularExpressions.Regex.Match(type, """ + SearchTextBox.Text + @""", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success;
+                }
+                return false;
+            })";
             try
             {
                 var scriptResult = await ScriptRunner.RunScriptAsync(searchExpression, new ScriptGlobals(cancellationToken), cancellationToken);
