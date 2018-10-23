@@ -5,11 +5,17 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-    xmlns:behaviours="clr-namespace:CaliburnMicroMessageNavigator.Behaviours"
+    xmlns:extensions="clr-namespace:CaliburnMicroMessageNavigator.Extensions"
+    xmlns:toms="urn:TomsToolbox"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <toms:CompositeConverter x:Key="InvertedBooleanToVisibilityConverter">
+            <toms:UnaryOperationConverter Operation="Negation" />
+            <BooleanToVisibilityConverter />
+        </toms:CompositeConverter>
         <Style x:Key="CommonStyle" TargetType="Control">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" />
             <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}" />
@@ -21,20 +27,24 @@
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type Label}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type CheckBox}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type ComboBox}" />
-        <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type ListViewItem}" />
+        <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type ListViewItem}">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Content" Value="{Binding Content, Mode=OneWay}" />
+            <Setter Property="ToolTip" Value="{Binding ToolTip, Mode=OneWay}" />
+        </Style>
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type ToolBar}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type GridSplitter}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type StatusBar}" />
     </UserControl.Resources>
-    <Grid>
+    <Grid IsEnabled="{Binding IsEnabled, Mode=OneWay}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ToolBar Style="{StaticResource CommonStyle}"  >
+        <ToolBar Style="{StaticResource CommonStyle}">
             <Label Style="{StaticResource CommonStyle}">
-                Message Type:
+                Message Types:
             </Label>
 
             <ComboBox
@@ -42,26 +52,36 @@
                 MinWidth="250"
                 IsTextSearchEnabled="True"
                 IsEditable="True"
-                Style="{StaticResource CommonStyle}" />
+                Text="{Binding SearchText, Mode=OneWayToSource}"
+                ItemsSource="{Binding MessageTypes, Mode=OneWay}"
+                Style="{StaticResource CommonStyle}"
+                extensions:FocusExtension.IsFocused="{Binding IsSearchInputFocused}" />
             <Button
+                Margin="5,0,0,0"
                 x:Name="SearchButton"
-                Click="SearchButton_Click"
                 IsDefault="True"
+                Command="{Binding SearchCommand}"
                 Style="{StaticResource CommonStyle}">
                 Search
             </Button>
             <Button
+                Margin="5,0,0,0"
                 x:Name="CancelButton"
-                Click="CancelButton_OnClick"
+                Command="{Binding CancelCommand}"
                 Style="{StaticResource CommonStyle}"
-                Visibility="Collapsed">
+                Visibility="{Binding OnSearching, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                 Cancel
             </Button>
         </ToolBar>
-        <Grid Grid.Row="1">
+        <Label Grid.Row="1" HorizontalAlignment="Center" FontSize="48" VerticalAlignment="Center"
+               Visibility="{Binding IsEnabled, Converter={StaticResource InvertedBooleanToVisibilityConverter}, Mode=OneWay}"
+               Grid.ColumnSpan="2" Margin="146,51">
+            No solution loaded yet!
+        </Label>
+        <Grid Grid.Row="1"  Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="17*" />
-                <ColumnDefinition Width="33*" />
+                <ColumnDefinition Width="49*" />
+                <ColumnDefinition Width="111*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -73,17 +93,24 @@
             <ListView
                 Name="ListViewPublicationsResults"
                 Grid.Row="1"
-                Grid.ColumnSpan="2"
-                Style="{StaticResource CommonStyle}" />
+                SelectedItem="{Binding CurrentPublication, Mode=OneWayToSource}"
+                ItemsSource="{Binding Publications, Mode=OneWay}"
+                Style="{StaticResource CommonStyle}"
+                toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultPublicationItemCommand}"
+                Grid.ColumnSpan="2" />
             <Label Grid.Row="2" Grid.ColumnSpan="2">Handlers:</Label>
             <ListView
                 Name="ListViewHandlersResults"
+                SelectedItem="{Binding CurrentHandler, Mode=OneWayToSource}"
+                ItemsSource="{Binding Handlers, Mode=OneWay}"
                 Grid.Row="3"
-                Grid.ColumnSpan="2"
-                Style="{StaticResource CommonStyle}" />
+                Style="{StaticResource CommonStyle}"
+                toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultHandlerItemCommand}"
+                Grid.ColumnSpan="2" />
+            <Label Grid.Row="2" Grid.ColumnSpan="2">Handlers:</Label>
         </Grid>
         <StatusBar Grid.Row="2" Style="{StaticResource CommonStyle}">
-            <Label x:Name="StatusLabel" Style="{StaticResource CommonStyle}">Ready</Label>
+            <Label x:Name="StatusLabel" Style="{StaticResource CommonStyle}" Content="{Binding Status, Mode=OneWay}" />
         </StatusBar>
     </Grid>
 </UserControl>

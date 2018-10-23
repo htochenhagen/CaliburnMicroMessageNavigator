@@ -87,7 +87,10 @@ namespace CaliburnMicroMessageNavigator
             .Where(ie =>
                 Regex.Match(ie.Expression.ToString(), "publish.*(thread)?", RegexOptions.IgnoreCase).Success);
 
-        public IEnumerable<string> AllPublicationsTypes => AllPublications.Select(p =>
+        public IEnumerable<MethodDeclarationSyntax> AllHandlers => AllNodes.OfType<MethodDeclarationSyntax>()
+            .Where(md => md.Identifier.Text == "Handle");
+
+        public IEnumerable<string> AllPublicationTypes => AllPublications.Select(p =>
         {
             var expression = p.ArgumentList.Arguments.First().Expression;
             var sematicModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
@@ -103,6 +106,8 @@ namespace CaliburnMicroMessageNavigator
 
             return null;
         }).Where(t => t != null).Distinct();
+
+        public IEnumerable<string> AllHandlerTypes => AllHandlers.Select(p => p.ParameterList.Parameters.Last().Type.ToString()).Distinct();
 
         public CancellationToken CancellationToken { get; }
 
