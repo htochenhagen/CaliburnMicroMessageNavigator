@@ -39,7 +39,14 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             Status = "Ready";
 
             _scriptGlobals = new ScriptGlobals(ResetCancellationToken());
-            _scriptGlobals.SolutionOpened += OnSolutionOpened;
+            if (_scriptGlobals.IsSolutionOpen)
+            {
+                Initialize();
+            }
+            else
+            {
+                _scriptGlobals.SolutionOpened += OnSolutionOpened;
+            }
 
             Publications = new ObservableCollection<ItemViewModel>();
             Handlers = new ObservableCollection<ItemViewModel>();
@@ -266,8 +273,14 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
         private void OnSolutionOpened(object sender, object e)
         {
-            IsEnabled = true;
-            MessageTypes = new ObservableCollection<string>((_scriptGlobals.AllPublicationTypes.ToList().Union(_scriptGlobals.AllHandlerTypes.ToList())).OrderBy(x => x));
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            IsEnabled = _scriptGlobals.IsSolutionOpen;
+            MessageTypes = new ObservableCollection<string>(
+                (_scriptGlobals.AllPublicationTypes.ToList().Union(_scriptGlobals.AllHandlerTypes.ToList())).OrderBy(x => x));
         }
 
         private async Task<int> ExecutePublicationsSearchAsync(CancellationToken cancellationToken)

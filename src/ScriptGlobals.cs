@@ -19,6 +19,8 @@ namespace CaliburnMicroMessageNavigator
 
             RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened += SolutionEventsOnOpened;
 
+            IsSolutionOpen = RoslynVisxHelpers.Dte2?.Solution?.IsOpen ?? false;
+
             #region Test Queries
 
             //var nodes = AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == "Handle" && md.ParameterList.Parameters.Last().Type.ToString().StartsWith("BusyEvent"));
@@ -45,6 +47,7 @@ namespace CaliburnMicroMessageNavigator
 
         private void SolutionEventsOnOpened()
         {
+            IsSolutionOpen = true;
             OnSolutionOpened();
             RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened -= SolutionEventsOnOpened;
         }
@@ -110,6 +113,8 @@ namespace CaliburnMicroMessageNavigator
         public IEnumerable<string> AllHandlerTypes => AllHandlers.Select(p => p.ParameterList.Parameters.Last().Type.ToString()).Distinct();
 
         public CancellationToken CancellationToken { get; }
+
+        public bool IsSolutionOpen { get; set; }
 
         public void Dispose()
         {
