@@ -84,7 +84,7 @@ namespace CaliburnMicroMessageNavigator
         public IEnumerable<SyntaxNode> AllNodes =>
             Workspace.CurrentSolution.Projects
                 .SelectMany(p => p.Documents)
-                .SelectMany(d => d.GetSyntaxRootAsync(CancellationToken).Result.DescendantNodesAndSelf());
+                .SelectMany(d => d.GetSyntaxRootAsync(CancellationToken)?.Result.DescendantNodesAndSelf());
 
         public IEnumerable<InvocationExpressionSyntax> AllPublications => AllNodes.OfType<InvocationExpressionSyntax>()
             .Where(ie =>
@@ -95,16 +95,23 @@ namespace CaliburnMicroMessageNavigator
 
         public IEnumerable<string> AllPublicationTypes => AllPublications.Select(p =>
         {
-            var expression = p.ArgumentList.Arguments.First().Expression;
-            var sematicModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
-                .GetSemanticModelAsync().Result;
-            var typeInfo = sematicModel.GetTypeInfo(expression);
-            var fullTypeName = typeInfo.Type;
-            var splittedType = fullTypeName.ToString().Split('.');
-            if (splittedType.Length > 1)
+            var expression = p.ArgumentList.Arguments.First()?.Expression;
+            if (expression != null)
             {
-                var type = splittedType.Last();
-                return type;
+                var semanticModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
+                    .GetSemanticModelAsync()?.Result;
+                if (semanticModel != null)
+                {
+                    var sematicModel = semanticModel;
+                    var typeInfo = sematicModel.GetTypeInfo(expression);
+                    var fullTypeName = typeInfo.Type;
+                    var splittedType = fullTypeName.ToString().Split('.');
+                    if (splittedType.Length > 1)
+                    {
+                        var type = splittedType.Last();
+                        return type;
+                    }
+                }
             }
 
             return null;
