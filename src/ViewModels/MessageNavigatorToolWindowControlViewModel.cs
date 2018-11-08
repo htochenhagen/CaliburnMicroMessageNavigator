@@ -291,16 +291,22 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             var searchExpression =
                 @"AllPublications.Where(ie =>
             {
-                var expression = ie.ArgumentList.Arguments.First().Expression;
-                var sematicModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree).GetSemanticModelAsync().Result;
-                var typeInfo = sematicModel.GetTypeInfo(expression);
-                var fullTypeName = typeInfo.Type;
-                var splittedType = fullTypeName.ToString().Split('.');
-                if (splittedType.Length > 1)
+                var expression = ie.ArgumentList?.Arguments.FirstOrDefault()?.Expression;
+                if (expression != null)
                 {
-                    var type = fullTypeName.ToString().Split('.').Last();
-                    return System.Text.RegularExpressions.Regex.Match(type, """ + SearchText +
-                @""", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success;
+                    var sematicModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree).GetSemanticModelAsync().Result;
+                    var typeInfo = sematicModel.GetTypeInfo(expression);
+                    var fullTypeName = typeInfo.Type;
+                    if (fullTypeName != null)
+                    {
+                        var splittedType = fullTypeName.ToString().Split('.');
+                        if (splittedType.Length > 1)
+                        {
+                            var type = fullTypeName.ToString().Split('.').Last();
+                            return System.Text.RegularExpressions.Regex.Match(type, """ + SearchText +
+                        @""", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success;
+                        }
+                    }
                 }
                 return false;
             })";
@@ -310,13 +316,6 @@ namespace CaliburnMicroMessageNavigator.ViewModels
                     new ScriptGlobals(cancellationToken), cancellationToken);
 
                 return await DisplayPublicationsResultAsync(scriptResult, cancellationToken);
-            }
-            catch (AggregateException aex)
-            {
-                foreach (var aexInnerException in aex.InnerExceptions)
-                {
-                    AddToListViewPublications(aexInnerException);
-                }
             }
             catch (CompilationErrorException cex)
             {
