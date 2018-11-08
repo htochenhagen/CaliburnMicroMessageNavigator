@@ -309,7 +309,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
                     }
                 }
                 return false;
-            })";
+            }).ToList()";
             try
             {
                 var scriptResult = await ScriptRunner.RunScriptAsync(searchExpression,
@@ -335,7 +335,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
             //var searchExpression = SearchTextBox.Text;
             var searchExpression =
-                $"AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == \"Handle\" && System.Text.RegularExpressions.Regex.Match(md.ParameterList.Parameters.Last().Type.ToString(), \"{SearchText}\", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success)";
+                $"AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == \"Handle\" && System.Text.RegularExpressions.Regex.Match(md.ParameterList.Parameters.Last().Type.ToString(), \"{SearchText}\", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success).ToList()";
             try
             {
                 var scriptResult = await ScriptRunner.RunScriptAsync(searchExpression,
