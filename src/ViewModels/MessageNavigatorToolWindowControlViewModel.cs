@@ -311,6 +311,13 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
                 return await DisplayPublicationsResultAsync(scriptResult, cancellationToken);
             }
+            catch (AggregateException aex)
+            {
+                foreach (var aexInnerException in aex.InnerExceptions)
+                {
+                    AddToListViewPublications(aexInnerException);
+                }
+            }
             catch (CompilationErrorException cex)
             {
                 DisplayDiagnosticsForPublications(cex.Diagnostics);

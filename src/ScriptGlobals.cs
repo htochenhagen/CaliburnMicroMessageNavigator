@@ -23,24 +23,33 @@ namespace CaliburnMicroMessageNavigator
 
             #region Test Queries
 
-            //var nodes = AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == "Handle" && md.ParameterList.Parameters.Last().Type.ToString().StartsWith("BusyEvent"));
-            //var nodes = AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == "Handle" && System.Text.RegularExpressions.Regex.Match(md.ParameterList.Parameters.Last().Type.ToString(), "BusyEvent", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success);
-            //var nodes = AllPublications.Where(ie =>
-            //{
-            //    var expression = ie.ArgumentList.Arguments.First().Expression;
-            //    var sematicModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
-            //        .GetSemanticModelAsync().Result;
-            //    var typeInfo = sematicModel.GetTypeInfo(expression);
-            //    var fullTypeName = typeInfo.Type;
-            //    var splittedType = fullTypeName.ToString().Split('.');
-            //    if (splittedType.Length > 1)
-            //    {
-            //        var type = splittedType.Last();
-            //        return Regex.Match(type, "report", RegexOptions.IgnoreCase).Success;
-            //    }
+            if (IsSolutionOpen)
+            {
+                //var nodes = AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == "Handle" && md.ParameterList.Parameters.Last().Type.ToString().StartsWith("BusyEvent"));
+                //var nodes = AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == "Handle" && System.Text.RegularExpressions.Regex.Match(md.ParameterList.Parameters.Last().Type.ToString(), "BusyEvent", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success);
+                //var nodes = AllPublications.Where(ie =>
+                //{
+                //    var expression = ie.ArgumentList?.Arguments.FirstOrDefault()?.Expression;
+                //    if (expression != null)
+                //    {
+                //        var sematicModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
+                //            .GetSemanticModelAsync().Result;
+                //        var typeInfo = sematicModel.GetTypeInfo(expression);
+                //        var fullTypeName = typeInfo.Type;
+                //        if (fullTypeName != null)
+                //        {
+                //            var splittedType = fullTypeName.ToString().Split('.');
+                //            if (splittedType.Length > 1)
+                //            {
+                //                var type = splittedType.Last();
+                //                return Regex.Match(type, "ReportRequestSave", RegexOptions.IgnoreCase).Success;
+                //            }
+                //        }
+                //    }
 
-            //    return false;
-            //}).ToList();
+                //    return false;
+                //}).ToList();
+            }
 
             #endregion
         }
@@ -48,8 +57,14 @@ namespace CaliburnMicroMessageNavigator
         private void SolutionEventsOnOpened()
         {
             IsSolutionOpen = true;
-            OnSolutionOpened();
-            RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened -= SolutionEventsOnOpened;
+            try
+            {
+                OnSolutionOpened();
+            }
+            finally
+            {
+                RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened -= SolutionEventsOnOpened;
+            }
         }
 
         /// <summary>
@@ -95,21 +110,24 @@ namespace CaliburnMicroMessageNavigator
 
         public IEnumerable<string> AllPublicationTypes => AllPublications.Select(p =>
         {
-            var expression = p.ArgumentList.Arguments.First()?.Expression;
-            if (expression != null)
+            if (p.ArgumentList.Arguments.Any())
             {
-                var semanticModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
-                    .GetSemanticModelAsync()?.Result;
-                if (semanticModel != null)
+                var expression = p.ArgumentList.Arguments.First()?.Expression;
+                if (expression != null)
                 {
-                    var sematicModel = semanticModel;
-                    var typeInfo = sematicModel.GetTypeInfo(expression);
-                    var fullTypeName = typeInfo.Type;
-                    var splittedType = fullTypeName.ToString().Split('.');
-                    if (splittedType.Length > 1)
+                    var semanticModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
+                        .GetSemanticModelAsync()?.Result;
+                    if (semanticModel != null)
                     {
-                        var type = splittedType.Last();
-                        return type;
+                        var sematicModel = semanticModel;
+                        var typeInfo = sematicModel.GetTypeInfo(expression);
+                        var fullTypeName = typeInfo.Type;
+                        var splittedType = fullTypeName.ToString().Split('.');
+                        if (splittedType.Length > 1)
+                        {
+                            var type = splittedType.Last();
+                            return type;
+                        }
                     }
                 }
             }
