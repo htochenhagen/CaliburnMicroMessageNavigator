@@ -20,7 +20,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 {
     public class MessageNavigatorToolWindowControlViewModel : ObservableObject
     {
-        private const int PageLimit = 100;
+        private const int PageLimit = 10000;
         private readonly ScriptGlobals _scriptGlobals;
         private CancellationTokenSource _cancellationTokenSource;
         private ItemViewModel _currentHandler;
