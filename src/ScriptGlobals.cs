@@ -121,7 +121,6 @@ namespace CaliburnMicroMessageNavigator
                     }
                 }
             }
-
             return null;
         }).Where(t => t != null).Distinct();
 

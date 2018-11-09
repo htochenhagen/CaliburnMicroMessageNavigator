@@ -5,8 +5,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using CaliburnMicroMessageNavigator.Extensions;
 using CaliburnMicroMessageNavigator.ToolWindows;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,7 +25,10 @@ namespace CaliburnMicroMessageNavigator.ViewModels
         private CancellationTokenSource _cancellationTokenSource;
         private ItemViewModel _currentHandler;
         private ItemViewModel _currentPublication;
+        private List<string> _errorList;
+        private string _errors;
         private ObservableCollection<ItemViewModel> _handlers;
+        private bool _hasErrors;
         private bool _isEnabled;
         private bool _isSearchInputFocused;
         private ObservableCollection<string> _messageTypes;
@@ -35,18 +40,28 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
         public MessageNavigatorToolWindowControlViewModel(MessageNavigatorToolWindowState state)
         {
-            ToolWindowState = state;
+            try
+            {
+                ToolWindowState = state;
 
-            Status = "Ready";
+                Status = "Ready";
+                Errors = null;
+                ErrorList = new List<string>();
 
-            _scriptGlobals = new ScriptGlobals(ResetCancellationToken());
-            if (_scriptGlobals.IsSolutionOpen)
-                Initialize();
-            else
-                _scriptGlobals.SolutionOpened += OnSolutionOpened;
+                _scriptGlobals = new ScriptGlobals(ResetCancellationToken());
+                if (_scriptGlobals.IsSolutionOpen)
+                    Initialize();
+                else
+                    _scriptGlobals.SolutionOpened += OnSolutionOpened;
 
-            Publications = new ObservableCollection<ItemViewModel>();
-            Handlers = new ObservableCollection<ItemViewModel>();
+                Publications = new ObservableCollection<ItemViewModel>();
+                Handlers = new ObservableCollection<ItemViewModel>();
+            }
+            catch (Exception ex)
+            {
+                HandleError(ex);
+                throw;
+            }
         }
 
         public string SearchText
@@ -141,6 +156,36 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             }
         }
 
+        public string Errors
+        {
+            get => _errors;
+            set
+            {
+                _errors = value;
+                OnPropertyChanged();
+            }
+        }
+
+
+        public List<string> ErrorList
+        {
+            get => _errorList;
+            set
+            {
+                _errorList = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool HasErrors
+        {
+            get => _hasErrors;
+            set
+            {
+                _hasErrors = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ObservableCollection<ItemViewModel> Publications
         {
@@ -174,8 +219,10 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             try
             {
                 OnSearching = true;
-
                 var cancellationToken = ResetCancellationToken();
+
+                ErrorList.Clear();
+                Errors = null;
 
                 var publicationsSearchTask = ExecutePublicationsSearchAsync(cancellationToken);
                 var handlersSearchTask = ExecuteHandlersSearchAsync(cancellationToken);
@@ -270,15 +317,31 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
         private void OnSolutionOpened(object sender, object e)
         {
-            Initialize();
+            try
+            {
+                Initialize();
+            }
+            catch (Exception ex)
+            {
+                HandleError(ex);
+                throw;
+            }
+        }
+
+        private void HandleError(Exception ex)
+        {
+            ErrorList.Add(ex.GetErrorMessage());
+            Errors = string.Join(Environment.NewLine, ErrorList);
+            HasErrors = ErrorList.Count > 0;
         }
 
         private void Initialize()
         {
             IsEnabled = _scriptGlobals.IsSolutionOpen;
-            MessageTypes = new ObservableCollection<string>(
-                (_scriptGlobals.AllPublicationTypes.ToList().Union(_scriptGlobals.AllHandlerTypes.ToList()))
-                .OrderBy(x => x));
+
+            var allPublicationTypes = _scriptGlobals.AllPublicationTypes.ToList();
+            var allHandlerTypes = _scriptGlobals.AllHandlerTypes.ToList();
+            MessageTypes = new ObservableCollection<string>(allPublicationTypes.Union(allHandlerTypes).OrderBy(x => x));
         }
 
         private async Task<int> ExecutePublicationsSearchAsync(CancellationToken cancellationToken)
@@ -506,7 +569,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             if (syntaxNodeOrToken != null)
                 return new SyntaxOrTokenItemViewModel(syntaxNodeOrToken.Value, maxFilePathLength);
 
-            return new ItemViewModel {Content = item?.ToString() ?? "<null>"};
+            return new ItemViewModel { Content = item?.ToString() ?? "<null>" };
         }
 
         private static IEnumerable<object> MakeEnumerable(object input)
@@ -514,7 +577,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             if (input is IEnumerable enumerable && !(input is string)) return enumerable.Cast<object>();
 
             // If not we wrap it in an Enumerable with a single item
-            return new[] {input};
+            return new[] { input };
         }
     }
 }
