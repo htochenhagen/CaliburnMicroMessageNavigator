@@ -102,37 +102,42 @@
             No solution loaded yet!
         </Label>
         <Grid Grid.Row="1" Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="49*" />
-                <ColumnDefinition Width="111*" />
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="0.5*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="0.5*" />
             </Grid.RowDefinitions>
-            <Label>Publications:</Label>
-            <ListView
-                Name="ListViewPublicationsResults"
-                Grid.Row="1"
-                Grid.ColumnSpan="2"
-                toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultPublicationItemCommand}"
-                FontFamily="Courier New"
-                ItemsSource="{Binding Publications, Mode=OneWay}"
-                SelectedItem="{Binding CurrentPublication, Mode=OneWayToSource}"
-                Style="{StaticResource CommonStyle}" />
-            <Label Grid.Row="2">Handlers:</Label>
-            <ListView
-                Name="ListViewHandlersResults"
-                Grid.Row="3"
-                Grid.ColumnSpan="2"
-                toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultHandlerItemCommand}"
-                FontFamily="Courier New"
-                ItemsSource="{Binding Handlers, Mode=OneWay}"
-                SelectedItem="{Binding CurrentHandler, Mode=OneWayToSource}"
-                Style="{StaticResource CommonStyle}" />
-            <Label Grid.Row="2" Grid.ColumnSpan="2">Handlers:</Label>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label>Publications:</Label>
+                <ListView
+                    Name="ListViewPublicationsResults"
+                    Grid.Row="1"
+                    toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultPublicationItemCommand}"
+                    FontFamily="Courier New"
+                    ItemsSource="{Binding Publications, Mode=OneWay}"
+                    SelectedItem="{Binding CurrentPublication, Mode=OneWayToSource}"
+                    Style="{StaticResource CommonStyle}" />
+            </Grid>
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"></GridSplitter>
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label>Handlers:</Label>
+                <ListView
+                    Name="ListViewHandlersResults"
+                    Grid.Row="1"
+                    toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultHandlerItemCommand}"
+                    FontFamily="Courier New"
+                    ItemsSource="{Binding Handlers, Mode=OneWay}"
+                    SelectedItem="{Binding CurrentHandler, Mode=OneWayToSource}"
+                    Style="{StaticResource CommonStyle}" />
+            </Grid>
         </Grid>
         <StatusBar Grid.Row="2" Style="{StaticResource CommonStyle}">
             <Label
