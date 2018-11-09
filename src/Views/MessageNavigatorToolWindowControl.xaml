@@ -91,6 +91,7 @@
             </Grid.RowDefinitions>
             <Label Grid.ColumnSpan="2">Publications:</Label>
             <ListView
+                FontFamily="Courier New"
                 Name="ListViewPublicationsResults"
                 Grid.Row="1"
                 SelectedItem="{Binding CurrentPublication, Mode=OneWayToSource}"
@@ -100,6 +101,7 @@
                 Grid.ColumnSpan="2" />
             <Label Grid.Row="2" Grid.ColumnSpan="2">Handlers:</Label>
             <ListView
+                FontFamily="Courier New"
                 Name="ListViewHandlersResults"
                 SelectedItem="{Binding CurrentHandler, Mode=OneWayToSource}"
                 ItemsSource="{Binding Handlers, Mode=OneWay}"

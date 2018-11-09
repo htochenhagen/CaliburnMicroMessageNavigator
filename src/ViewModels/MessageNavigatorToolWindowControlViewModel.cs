@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using CaliburnMicroMessageNavigator.ToolWindows;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using TomsToolbox.Desktop;
 using TomsToolbox.Wpf;
@@ -40,13 +41,9 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
             _scriptGlobals = new ScriptGlobals(ResetCancellationToken());
             if (_scriptGlobals.IsSolutionOpen)
-            {
                 Initialize();
-            }
             else
-            {
                 _scriptGlobals.SolutionOpened += OnSolutionOpened;
-            }
 
             Publications = new ObservableCollection<ItemViewModel>();
             Handlers = new ObservableCollection<ItemViewModel>();
@@ -280,7 +277,8 @@ namespace CaliburnMicroMessageNavigator.ViewModels
         {
             IsEnabled = _scriptGlobals.IsSolutionOpen;
             MessageTypes = new ObservableCollection<string>(
-                (_scriptGlobals.AllPublicationTypes.ToList().Union(_scriptGlobals.AllHandlerTypes.ToList())).OrderBy(x => x));
+                (_scriptGlobals.AllPublicationTypes.ToList().Union(_scriptGlobals.AllHandlerTypes.ToList()))
+                .OrderBy(x => x));
         }
 
         private async Task<int> ExecutePublicationsSearchAsync(CancellationToken cancellationToken)
@@ -304,7 +302,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
                         {
                             var type = fullTypeName.ToString().Split('.').Last();
                             return System.Text.RegularExpressions.Regex.Match(type, """ + SearchText +
-                        @""", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success;
+                @""", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success;
                         }
                     }
                 }
@@ -359,7 +357,15 @@ namespace CaliburnMicroMessageNavigator.ViewModels
         {
             Publications.Clear();
 
-            return await IterateItemsAsync(scriptResult, cancellationToken, AddToListViewPublications,
+            var maxFilePathLength = 0;
+            var expressions = MakeEnumerable(scriptResult).ToList().Select(e => e as ExpressionSyntax).Where(e =>
+                e != null).ToList();
+            if (expressions.Any())
+                maxFilePathLength = expressions.Max(i =>
+                    i?.GetLocation()?.SourceTree
+                        ?.FilePath?.Length ?? 0);
+            return await IterateItemsAsync(scriptResult, maxFilePathLength, cancellationToken,
+                AddToListViewPublications,
                 WaitForNextPublicationsPageRequestAsync);
         }
 
@@ -367,7 +373,16 @@ namespace CaliburnMicroMessageNavigator.ViewModels
         {
             Handlers.Clear();
 
-            return await IterateItemsAsync(scriptResult, cancellationToken, AddToListViewHandlers,
+            var maxFilePathLength = 0;
+            var methodDeclarations = MakeEnumerable(scriptResult).ToList().Select(md => md as MethodDeclarationSyntax)
+                .Where(md =>
+                    md != null).ToList();
+            if (methodDeclarations.Any())
+                maxFilePathLength = methodDeclarations.Max(d =>
+                    d?.GetLocation()?.SourceTree
+                        ?.FilePath?.Length ?? 0);
+
+            return await IterateItemsAsync(scriptResult, maxFilePathLength, cancellationToken, AddToListViewHandlers,
                 WaitForNextHandlersPageRequestAsync);
         }
 
@@ -401,15 +416,15 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             return moreItemsTaskCompletionSource.Task;
         }
 
-        private void AddToListViewHandlers(object item)
+        private void AddToListViewHandlers(object item, int? maxFilePathLength = null)
         {
-            var foundHandleResult = CreateFoundResult(item);
+            var foundHandleResult = CreateFoundResult(item, maxFilePathLength);
             Handlers.Add(foundHandleResult);
         }
 
-        private void AddToListViewPublications(object item)
+        private void AddToListViewPublications(object item, int? maxFilePathLength = null)
         {
-            var foundHandleResult = CreateFoundResult(item);
+            var foundHandleResult = CreateFoundResult(item, maxFilePathLength);
             Publications.Add(foundHandleResult);
         }
 
@@ -449,8 +464,9 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             return newSource.Token;
         }
 
-        private static async Task<int> IterateItemsAsync(object scriptResult, CancellationToken cancellationToken,
-            Action<object> itemAction, Func<int, Task> waitForNextsPageRequestAction)
+        private static async Task<int> IterateItemsAsync(object scriptResult, int maxFilePathLength,
+            CancellationToken cancellationToken,
+            Action<object, int?> itemAction, Func<int, Task> waitForNextsPageRequestAction)
         {
             var count = 0;
             var pageLimit = PageLimit;
@@ -477,17 +493,18 @@ namespace CaliburnMicroMessageNavigator.ViewModels
                     // Start getting the next item while we process the current
                     moveNextTask = enumerator.MoveNextAsync();
 
-                    itemAction(item);
+                    itemAction(item, maxFilePathLength);
                 }
             }
 
             return count;
         }
 
-        private static ItemViewModel CreateFoundResult(object item)
+        private static ItemViewModel CreateFoundResult(object item, int? maxFilePathLength = null)
         {
             var syntaxNodeOrToken = RoslynHelpers.AsSyntaxNodeOrToken(item);
-            if (syntaxNodeOrToken != null) return new SyntaxOrTokenItemViewModel(syntaxNodeOrToken.Value);
+            if (syntaxNodeOrToken != null)
+                return new SyntaxOrTokenItemViewModel(syntaxNodeOrToken.Value, maxFilePathLength);
 
             return new ItemViewModel {Content = item?.ToString() ?? "<null>"};
         }

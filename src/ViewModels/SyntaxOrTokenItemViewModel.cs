@@ -1,19 +1,19 @@
 ﻿using CaliburnMicroMessageNavigator.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace CaliburnMicroMessageNavigator.ViewModels
 {
     public class SyntaxOrTokenItemViewModel : ItemViewModel
     {
-        public FileLinePositionSpan LineSpan { get; }
-
-        public SyntaxOrTokenItemViewModel(SyntaxNodeOrToken syntaxNodeOrToken)
+        public SyntaxOrTokenItemViewModel(SyntaxNodeOrToken syntaxNodeOrToken, int? maxFilePathLength = null)
         {
             LineSpan = syntaxNodeOrToken.GetLocation().GetLineSpan();
 
-            Content = $"{LineSpan}: {syntaxNodeOrToken.Kind()} {syntaxNodeOrToken.ToString().Truncate()}";
+            Content =
+                $"{LineSpan.Path.PadRight(maxFilePathLength ?? 100)} {LineSpan.Span.ToString().PadLeft(20)}{"".PadLeft(5)}{syntaxNodeOrToken.ToString().Truncate()}";
             ToolTip = syntaxNodeOrToken.ToString();
         }
+
+        public FileLinePositionSpan LineSpan { get; }
     }
 }
