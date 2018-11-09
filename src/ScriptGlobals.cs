@@ -100,27 +100,31 @@ namespace CaliburnMicroMessageNavigator
 
         public IEnumerable<string> AllPublicationTypes => AllPublications.Select(p =>
         {
-            if (p.ArgumentList.Arguments.Any())
-            {
-                var expression = p.ArgumentList.Arguments.First()?.Expression;
-                if (expression != null)
+                if (p.ArgumentList.Arguments.Any())
                 {
-                    var semanticModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
-                        .GetSemanticModelAsync()?.Result;
-                    if (semanticModel != null)
+                    var expression = p.ArgumentList.Arguments.First()?.Expression;
+                    if (expression != null)
                     {
-                        var sematicModel = semanticModel;
-                        var typeInfo = sematicModel.GetTypeInfo(expression);
-                        var fullTypeName = typeInfo.Type;
-                        var splittedType = fullTypeName.ToString().Split('.');
-                        if (splittedType.Length > 1)
+                        var semanticModel = Workspace.CurrentSolution.GetDocument(expression.SyntaxTree)
+                            .GetSemanticModelAsync()?.Result;
+                        if (semanticModel != null)
                         {
-                            var type = splittedType.Last();
-                            return type;
+                            var sematicModel = semanticModel;
+                            var typeInfo = sematicModel.GetTypeInfo(expression);
+                            var fullTypeName = typeInfo.Type;
+                            if (fullTypeName != null)
+                            {
+                                var splittedType = fullTypeName.ToString().Split('.');
+                                if (splittedType.Length > 1)
+                                {
+                                    var type = fullTypeName.ToString().Split('.').Last();
+                                    return type;
+                                }
+                            }
                         }
                     }
                 }
-            }
+
             return null;
         }).Where(t => t != null).Distinct();
 
