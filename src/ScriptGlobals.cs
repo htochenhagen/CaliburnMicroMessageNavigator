@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -10,21 +11,22 @@ namespace CaliburnMicroMessageNavigator
 {
     public class ScriptGlobals : IDisposable
     {
-        public event EventHandler<object> SolutionOpened;
         private Workspace _workspace;
 
         public ScriptGlobals(CancellationToken cancellationToken)
         {
             CancellationToken = cancellationToken;
 
-            RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened += SolutionEventsOnOpened;
-
             IsSolutionOpen = RoslynVisxHelpers.Dte2?.Solution?.IsOpen ?? false;
 
-            #region Test Queries
-
-            if (IsSolutionOpen)
+            if (!IsSolutionOpen)
             {
+                Task.Run(CheckIfSolutionIsOpenAsync);
+            }
+            else
+            {
+                #region Test Queries
+
                 //var nodes = AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == "Handle" && md.ParameterList.Parameters.Last().Type.ToString().StartsWith("BusyEvent"));
                 //var nodes = AllNodes.OfType<MethodDeclarationSyntax>().Where(md => md.Identifier.Text == "Handle" && System.Text.RegularExpressions.Regex.Match(md.ParameterList.Parameters.Last().Type.ToString(), "BusyEvent", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success);
                 //var nodes = AllPublications.Where(ie =>
@@ -49,23 +51,11 @@ namespace CaliburnMicroMessageNavigator
 
                 //    return false;
                 //}).ToList();
-            }
 
-            #endregion
+                #endregion            }
+            }
         }
 
-        private void SolutionEventsOnOpened()
-        {
-            IsSolutionOpen = true;
-            try
-            {
-                OnSolutionOpened();
-            }
-            finally
-            {
-                RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened -= SolutionEventsOnOpened;
-            }
-        }
 
         /// <summary>
         ///     Provides access to the Workspace
@@ -135,7 +125,8 @@ namespace CaliburnMicroMessageNavigator
             return null;
         }).Where(t => t != null).Distinct();
 
-        public IEnumerable<string> AllHandlerTypes => AllHandlers.Select(p => p.ParameterList.Parameters.Last().Type.ToString()).Distinct();
+        public IEnumerable<string> AllHandlerTypes =>
+            AllHandlers.Select(p => p.ParameterList.Parameters.Last().Type.ToString()).Distinct();
 
         public CancellationToken CancellationToken { get; }
 
@@ -143,10 +134,20 @@ namespace CaliburnMicroMessageNavigator
 
         public void Dispose()
         {
-            RoslynVisxHelpers.Dte2.Events.SolutionEvents.Opened -= SolutionEventsOnOpened;
-
             _workspace?.Dispose();
         }
+
+        private async Task CheckIfSolutionIsOpenAsync()
+        {
+            while (!RoslynVisxHelpers.Dte2?.Solution?.IsOpen ?? true)
+                // don't run again for at least 200 milliseconds
+                await Task.Delay(200, CancellationToken);
+
+            IsSolutionOpen = true;
+            OnSolutionOpened();
+        }
+
+        public event EventHandler<object> SolutionOpened;
 
         protected virtual void OnSolutionOpened()
         {
