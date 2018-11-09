@@ -3,9 +3,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extensions="clr-namespace:CaliburnMicroMessageNavigator.Extensions"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-    xmlns:extensions="clr-namespace:CaliburnMicroMessageNavigator.Extensions"
     xmlns:toms="urn:TomsToolbox"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -43,42 +43,65 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <ToolBar Style="{StaticResource CommonStyle}">
-            <Label Style="{StaticResource CommonStyle}">
-                Message Types:
-            </Label>
+            <ToolBar.Resources>
+                <Style TargetType="{x:Type ToolBarPanel}">
+                    <Setter Property="Orientation" Value="Vertical" />
+                </Style>
+            </ToolBar.Resources>
 
-            <ComboBox
-                x:Name="SearchComboBox"
-                MinWidth="250"
-                IsTextSearchEnabled="True"
-                IsEditable="True"
-                Text="{Binding SearchText, Mode=OneWayToSource}"
-                ItemsSource="{Binding MessageTypes, Mode=OneWay}"
-                Style="{StaticResource CommonStyle}"
-                extensions:FocusExtension.IsFocused="{Binding IsSearchInputFocused}" />
-            <Button
-                Margin="5,0,0,0"
-                x:Name="SearchButton"
-                IsDefault="True"
-                Command="{Binding SearchCommand}"
-                Style="{StaticResource CommonStyle}">
-                Search
-            </Button>
-            <Button
-                Margin="5,0,0,0"
-                x:Name="CancelButton"
-                Command="{Binding CancelCommand}"
-                Style="{StaticResource CommonStyle}"
-                Visibility="{Binding OnSearching, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                Cancel
-            </Button>
+            <DockPanel>
+                <ToolBarPanel Orientation="Horizontal">
+                    <Label Style="{StaticResource CommonStyle}">
+                        Message Types:
+                    </Label>
+                    <ComboBox
+                        x:Name="SearchComboBox"
+                        MinWidth="250"
+                        extensions:FocusExtension.IsFocused="{Binding IsSearchInputFocused}"
+                        IsEditable="True"
+                        IsTextSearchEnabled="True"
+                        ItemsSource="{Binding MessageTypes, Mode=OneWay}"
+                        Style="{StaticResource CommonStyle}"
+                        Text="{Binding SearchText, Mode=OneWayToSource}" />
+                    <Button
+                        x:Name="SearchButton"
+                        Height="20"
+                        Margin="5,0,0,0"
+                        Command="{Binding SearchCommand}"
+                        IsDefault="True"
+                        Style="{StaticResource CommonStyle}">
+                        Search
+                    </Button>
+                    <Button
+                        x:Name="CancelButton"
+                        Height="20"
+                        Margin="5,0,0,0"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource CommonStyle}"
+                        Visibility="{Binding OnSearching, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                        Cancel
+                    </Button>
+                </ToolBarPanel>
+                <ProgressBar
+                    Width="125"
+                    Height="20"
+                    HorizontalAlignment="Right"
+                    DockPanel.Dock="Right"
+                    IsIndeterminate="True"
+                    Visibility="{Binding OnSearching, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+            </DockPanel>
         </ToolBar>
-        <Label Grid.Row="1" HorizontalAlignment="Center" FontSize="48" VerticalAlignment="Center"
-               Visibility="{Binding IsEnabled, Converter={StaticResource InvertedBooleanToVisibilityConverter}, Mode=OneWay}"
-               Grid.ColumnSpan="2" Margin="146,51">
+        <Label
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            Margin="146,51"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="48"
+            Visibility="{Binding IsEnabled, Converter={StaticResource InvertedBooleanToVisibilityConverter}, Mode=OneWay}">
             No solution loaded yet!
         </Label>
-        <Grid Grid.Row="1"  Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+        <Grid Grid.Row="1" Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="49*" />
                 <ColumnDefinition Width="111*" />
@@ -89,30 +112,33 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="0.5*" />
             </Grid.RowDefinitions>
-            <Label Grid.ColumnSpan="2">Publications:</Label>
+            <Label>Publications:</Label>
             <ListView
-                FontFamily="Courier New"
                 Name="ListViewPublicationsResults"
                 Grid.Row="1"
-                SelectedItem="{Binding CurrentPublication, Mode=OneWayToSource}"
-                ItemsSource="{Binding Publications, Mode=OneWay}"
-                Style="{StaticResource CommonStyle}"
+                Grid.ColumnSpan="2"
                 toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultPublicationItemCommand}"
-                Grid.ColumnSpan="2" />
-            <Label Grid.Row="2" Grid.ColumnSpan="2">Handlers:</Label>
-            <ListView
                 FontFamily="Courier New"
+                ItemsSource="{Binding Publications, Mode=OneWay}"
+                SelectedItem="{Binding CurrentPublication, Mode=OneWayToSource}"
+                Style="{StaticResource CommonStyle}" />
+            <Label Grid.Row="2">Handlers:</Label>
+            <ListView
                 Name="ListViewHandlersResults"
-                SelectedItem="{Binding CurrentHandler, Mode=OneWayToSource}"
-                ItemsSource="{Binding Handlers, Mode=OneWay}"
                 Grid.Row="3"
-                Style="{StaticResource CommonStyle}"
+                Grid.ColumnSpan="2"
                 toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultHandlerItemCommand}"
-                Grid.ColumnSpan="2" />
+                FontFamily="Courier New"
+                ItemsSource="{Binding Handlers, Mode=OneWay}"
+                SelectedItem="{Binding CurrentHandler, Mode=OneWayToSource}"
+                Style="{StaticResource CommonStyle}" />
             <Label Grid.Row="2" Grid.ColumnSpan="2">Handlers:</Label>
         </Grid>
         <StatusBar Grid.Row="2" Style="{StaticResource CommonStyle}">
-            <Label x:Name="StatusLabel" Style="{StaticResource CommonStyle}" Content="{Binding Status, Mode=OneWay}" />
+            <Label
+                x:Name="StatusLabel"
+                Content="{Binding Status, Mode=OneWay}"
+                Style="{StaticResource CommonStyle}" />
         </StatusBar>
     </Grid>
 </UserControl>
