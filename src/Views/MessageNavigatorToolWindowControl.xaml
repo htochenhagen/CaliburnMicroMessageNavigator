@@ -65,7 +65,7 @@
                         Text="{Binding SearchText, Mode=OneWayToSource}" />
                     <Button
                         x:Name="SearchButton"
-                        Height="20"
+                        Height="23"
                         Margin="5,0,0,0"
                         Command="{Binding SearchCommand}"
                         IsDefault="True"
@@ -74,7 +74,7 @@
                     </Button>
                     <Button
                         x:Name="CancelButton"
-                        Height="20"
+                        Height="23"
                         Margin="5,0,0,0"
                         Command="{Binding CancelCommand}"
                         Style="{StaticResource CommonStyle}"
