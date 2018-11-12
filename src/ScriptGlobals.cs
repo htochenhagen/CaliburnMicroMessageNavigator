@@ -52,7 +52,7 @@ namespace CaliburnMicroMessageNavigator
             else
             {
                 var solutionEventsListener = new SolutionEventsListener(RoslynVisxHelpers.GetServiceProvider());
-                solutionEventsListener.AfterSolutionLoaded += () =>
+                solutionEventsListener.AfterSolutionLoaded += (o, e) =>
                 {
                     Workspace.WorkspaceChanged += (sender, args) =>
                     {
