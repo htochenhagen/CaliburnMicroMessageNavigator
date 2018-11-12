@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using CaliburnMicroMessageNavigator.Extensions;
@@ -49,10 +48,10 @@ namespace CaliburnMicroMessageNavigator.ViewModels
                 ErrorList = new List<string>();
 
                 _scriptGlobals = new ScriptGlobals(ResetCancellationToken());
-                if (_scriptGlobals.IsSolutionOpen)
+                if (_scriptGlobals.IsSolutionReady)
                     Initialize();
                 else
-                    _scriptGlobals.SolutionOpened += OnSolutionOpened;
+                    _scriptGlobals.SolutionReady += OnSolutionReady;
 
                 Publications = new ObservableCollection<ItemViewModel>();
                 Handlers = new ObservableCollection<ItemViewModel>();
@@ -315,7 +314,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             }
         }
 
-        private void OnSolutionOpened(object sender, object e)
+        private void OnSolutionReady(object sender, object e)
         {
             try
             {
@@ -337,10 +336,11 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
         private void Initialize()
         {
-            IsEnabled = _scriptGlobals.IsSolutionOpen;
+            IsEnabled = _scriptGlobals.IsSolutionReady;
 
             var allPublicationTypes = _scriptGlobals.AllPublicationTypes.ToList();
             var allHandlerTypes = _scriptGlobals.AllHandlerTypes.ToList();
+
             MessageTypes = new ObservableCollection<string>(allPublicationTypes.Union(allHandlerTypes).OrderBy(x => x));
         }
 
@@ -569,7 +569,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             if (syntaxNodeOrToken != null)
                 return new SyntaxOrTokenItemViewModel(syntaxNodeOrToken.Value, maxFilePathLength);
 
-            return new ItemViewModel { Content = item?.ToString() ?? "<null>" };
+            return new ItemViewModel {Content = item?.ToString() ?? "<null>"};
         }
 
         private static IEnumerable<object> MakeEnumerable(object input)
@@ -577,7 +577,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             if (input is IEnumerable enumerable && !(input is string)) return enumerable.Cast<object>();
 
             // If not we wrap it in an Enumerable with a single item
-            return new[] { input };
+            return new[] {input};
         }
     }
 }

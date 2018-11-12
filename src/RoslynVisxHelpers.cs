@@ -13,6 +13,15 @@ namespace CaliburnMicroMessageNavigator
     {
         public static EnvDTE80.DTE2 Dte2 { get; } = Package.GetGlobalService(typeof(SDTE)) as EnvDTE80.DTE2;
 
+
+        public static ServiceProvider GetServiceProvider()
+        {
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            return new ServiceProvider(Dte2 as Microsoft.VisualStudio.OLE.Interop.IServiceProvider);
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
+        }
+
         public static Workspace GetWorkspace()
         {
             if (!Dte2?.Solution?.IsOpen ?? false) throw new InvalidOperationException("No Solution is opened");
