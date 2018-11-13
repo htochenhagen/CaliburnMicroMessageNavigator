@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using CaliburnMicroMessageNavigator.Views;
 using Microsoft.VisualStudio.Shell;
 

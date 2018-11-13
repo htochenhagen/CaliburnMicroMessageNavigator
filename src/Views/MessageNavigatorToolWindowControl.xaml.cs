@@ -8,6 +8,7 @@ namespace CaliburnMicroMessageNavigator.Views
         public MessageNavigatorToolWindowControl(MessageNavigatorToolWindowState state)
         {
             DataContext = new MessageNavigatorToolWindowControlViewModel(state);
+
             InitializeComponent();
         }
     }

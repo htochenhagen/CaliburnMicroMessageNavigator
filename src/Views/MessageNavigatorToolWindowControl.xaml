@@ -62,7 +62,7 @@
                         IsTextSearchEnabled="True"
                         ItemsSource="{Binding MessageTypes, Mode=OneWay}"
                         Style="{StaticResource CommonStyle}"
-                        Text="{Binding SearchText, Mode=OneWayToSource}" />
+                        Text="{Binding SearchText, Mode=TwoWay}" />
                     <Button
                         x:Name="SearchButton"
                         Height="23"

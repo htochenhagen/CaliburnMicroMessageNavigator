@@ -6,11 +6,14 @@ using Task = System.Threading.Tasks.Task;
 
 namespace CaliburnMicroMessageNavigator.Commands
 {
-    internal class ShowToolWindow
+    internal class ShowToolWindowCommand
     {
+        private static AsyncPackage _package;
+
         public static async Task InitializeAsync(AsyncPackage package)
         {
-            var commandService = (IMenuCommandService)await package.GetServiceAsync(typeof(IMenuCommandService));
+            _package = package;
+            var commandService = (IMenuCommandService) await package.GetServiceAsync(typeof(IMenuCommandService));
 
             var cmdId = new CommandID(Guid.Parse("33ec4b5c-3d65-4fc4-bc4d-a789d00817c2"), 0x0100);
             var cmd = new MenuCommand((s, e) => Execute(package), cmdId);

@@ -7,7 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Caliburn.Micro;
+using CaliburnMicroMessageNavigator.Events;
 using CaliburnMicroMessageNavigator.Extensions;
+using CaliburnMicroMessageNavigator.Mvvm;
 using CaliburnMicroMessageNavigator.ToolWindows;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,7 +20,7 @@ using TomsToolbox.Wpf;
 
 namespace CaliburnMicroMessageNavigator.ViewModels
 {
-    public class MessageNavigatorToolWindowControlViewModel : ObservableObject
+    public class MessageNavigatorToolWindowControlViewModel : ObservableObject, IHandleWithTask<SourceCodeTextEventMessage>
     {
         private const int PageLimit = 10000;
         private readonly ScriptGlobals _scriptGlobals;
@@ -41,6 +44,8 @@ namespace CaliburnMicroMessageNavigator.ViewModels
         {
             try
             {
+                MyPackage.CmmnEventAggregator.Subscribe(this);
+
                 ToolWindowState = state;
 
                 Status = "Ready";
@@ -134,7 +139,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             }
         }
 
-        public ICommand SearchCommand => new DelegateCommand(CanSearch, Search);
+        public ICommand SearchCommand => new AsyncCommand(CanSearch, SearchAsync);
 
         public ICommand CancelCommand => new DelegateCommand(CanCancel, Cancel);
 
@@ -210,10 +215,11 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
         private bool CanSearch()
         {
-            return IsEnabled && !_onSearching;
+            return IsEnabled && !OnSearching;
         }
-#pragma warning disable VSTHRD100 // Avoid async void methods
-        private async void Search()
+
+
+        private async Task SearchAsync()
         {
             try
             {
@@ -578,6 +584,13 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
             // If not we wrap it in an Enumerable with a single item
             return new[] {input};
+        }
+
+        public async Task Handle(SourceCodeTextEventMessage message)
+        {
+            SearchText = message.Text;
+            MyPackage.CmmnEventAggregator.PublishOnCurrentThread(new FocusToolWindowEventMessage());
+            await SearchAsync();
         }
     }
 }

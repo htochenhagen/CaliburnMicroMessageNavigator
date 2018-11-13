@@ -2,26 +2,43 @@
 
 <CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <Extern href="stdidcmd.h"/>
-  <Extern href="vsshlids.h"/>
-  <Include href="KnownImageIds.vsct"/>
+  <Extern href="stdidcmd.h" />
+  <Extern href="vsshlids.h" />
+  <Include href="KnownImageIds.vsct" />
 
   <Commands package="guidMyPackage">
     <Bitmaps>
-      <Bitmap guid="extensionIcon" href="Resources\Icon16x16.png" usedList="extensionIcon1"/> 
+      <Bitmap guid="extensionIcon" href="Resources\Icon16x16.png" usedList="extensionIcon1" /> 
     </Bitmaps>
     <Buttons>
       <Button guid="guidMyPackageCmdSet" id="ShowToolWindowId" priority="0x0100" type="Button">
         <!-- parent is View > Other Windows -->
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
-        <Icon guid="extensionIcon" id="extensionIcon1"/>
-        <!--<CommandFlag>IconIsMoniker</CommandFlag>-->
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+        <Icon guid="extensionIcon" id="extensionIcon1" />
         <Strings>
           <ButtonText>Caliburn.Micro.MessageNavigator</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidMyPackageCmdSet1" id="cmdidCMMNSearchCommand" priority="0x0100" type="Button">
+        <Parent guid="guidMyPackageCmdSet1" id="EditorContextMenuGroup" />
+        <Icon guid="extensionIcon" id="extensionIcon1" />
+        <Strings>
+          <ButtonText>Search in Caliburn.Micro.MessageNavigator</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
+    <Groups>
+      <Group guid="guidMyPackageCmdSet1" id="EditorContextMenuGroup" priority="0x0600">
+        <!-- parent is editor’s Context menu -->
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
+      </Group>
+    </Groups>
   </Commands>
+
+  <!-- Keyboard Shortcuts -->
+  <KeyBindings>
+    <KeyBinding guid="guidMyPackageCmdSet1" id="cmdidCMMNSearchCommand" editor="guidVSStd97" key1="M" mod1="Control" key2="N" mod2="Control" />
+  </KeyBindings>
 
   <Symbols>
     <GuidSymbol name="guidMyPackage" value="{bcbed547-34b3-4e0d-a0cc-740878b4f9fd}" />
@@ -32,6 +49,11 @@
 
     <GuidSymbol name="guidMyPackageCmdSet" value="{33ec4b5c-3d65-4fc4-bc4d-a789d00817c2}">
       <IDSymbol name="ShowToolWindowId" value="0x0100" />
+    </GuidSymbol>
+  
+    <GuidSymbol value="{f76f9f33-e602-4869-b9af-97c77e8e4a6a}" name="guidMyPackageCmdSet1">
+      <IDSymbol value="4128" name="EditorContextMenuGroup" />
+      <IDSymbol value="256" name="cmdidCMMNSearchCommand" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

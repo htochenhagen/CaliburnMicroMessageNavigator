@@ -4,10 +4,13 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Caliburn.Micro;
 using CaliburnMicroMessageNavigator.Commands;
+using CaliburnMicroMessageNavigator.Events;
 using CaliburnMicroMessageNavigator.ToolWindows;
 using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Constants = EnvDTE.Constants;
@@ -24,11 +27,12 @@ namespace CaliburnMicroMessageNavigator
     [Guid("bcbed547-34b3-4e0d-a0cc-740878b4f9fd")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
-    public sealed class MyPackage : AsyncPackage
+    public sealed class MyPackage : AsyncPackage, IHandleWithTask<FocusToolWindowEventMessage>
     {
         public MyPackage()
         {
             AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+            CmmnEventAggregator.Subscribe(this);
         }
 
         private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
@@ -64,12 +68,26 @@ namespace CaliburnMicroMessageNavigator
             return null;
         }
 
+        /// <summary>
+        /// Initialization of the package; this method is called right after the package is sited, so this is the place
+        /// where you can put all the initialization code that rely on services provided by VisualStudio.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token to monitor for initialization cancellation, which can occur when VS is shutting down.</param>
+        /// <param name="progress">A provider for progress updates.</param>
+        /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken,
             IProgress<ServiceProgressData> progress)
         {
-            await JoinableTaskFactory.SwitchToMainThreadAsync();
-            await ShowToolWindow.InitializeAsync(this);
+            await base.InitializeAsync(cancellationToken, progress);
+
+            // When initialized asynchronously, the current thread may be a background thread at this point.
+            // Do any initialization that requires the UI thread after switching to the UI thread.
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            await ShowToolWindowCommand.InitializeAsync(this);
+            await CmmnSearchCommand.InitializeAsync(this);
         }
+
+        public static EventAggregator CmmnEventAggregator = new EventAggregator();
 
         public override IVsAsyncToolWindowFactory GetAsyncToolWindowFactory(Guid toolWindowType)
         {
@@ -95,5 +113,15 @@ namespace CaliburnMicroMessageNavigator
                 DTE = dte
             };
         }
+
+        public async Task Handle(FocusToolWindowEventMessage message)
+        {
+            var pane = await FindToolWindowAsync(typeof(MessageNavigatorToolWindow), 0, true, DisposalToken);
+            if (pane?.Frame is IVsWindowFrame frame)
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
+                ErrorHandler.ThrowOnFailure(frame.Show());
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
+        }
+
     }
 }
