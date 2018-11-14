@@ -97,7 +97,9 @@ namespace CaliburnMicroMessageNavigator
         public List<SyntaxNode> AllNodes =>
             Workspace.CurrentSolution.Projects
                 .SelectMany(p => p.Documents)
-                .SelectMany(d => d.GetSyntaxRootAsync(CancellationToken)?.Result.DescendantNodesAndSelf()).ToList();
+                .Select(d => d?.GetSyntaxRootAsync(CancellationToken)?.Result?.DescendantNodesAndSelf())
+                .Where(d => d != null)
+                .SelectMany(d => d).ToList();
 
         public List<InvocationExpressionSyntax> AllPublications => AllNodes.OfType<InvocationExpressionSyntax>()
             .Where(ie =>
