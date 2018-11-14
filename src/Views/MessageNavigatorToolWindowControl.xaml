@@ -16,10 +16,17 @@
             <toms:UnaryOperationConverter Operation="Negation" />
             <BooleanToVisibilityConverter />
         </toms:CompositeConverter>
-        <Style x:Key="CommonStyle" TargetType="Control">
+        <Style x:Key="CommonColorStyle" TargetType="Control">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" />
             <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}" />
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBorderKey}}" />
+        </Style>
+
+        <Style
+            x:Key="CommonStyle"
+            BasedOn="{StaticResource CommonColorStyle}"
+            TargetType="Control">
+            <Setter Property="Height" Value="26" />
         </Style>
 
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type TextBox}" />
@@ -27,14 +34,18 @@
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type Label}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type CheckBox}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type ComboBox}" />
-        <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type ListViewItem}">
+        <Style TargetType="{x:Type ProgressBar}">
+            <Setter Property="Height" Value="26" />
+        </Style>
+        <Style BasedOn="{StaticResource CommonColorStyle}" TargetType="{x:Type ListView}" />
+        <Style BasedOn="{StaticResource CommonColorStyle}" TargetType="{x:Type ListViewItem}">
             <Setter Property="FontSize" Value="14" />
             <Setter Property="Content" Value="{Binding Content, Mode=OneWay}" />
             <Setter Property="ToolTip" Value="{Binding ToolTip, Mode=OneWay}" />
         </Style>
-        <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type ToolBar}" />
-        <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type GridSplitter}" />
-        <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type StatusBar}" />
+        <Style BasedOn="{StaticResource CommonColorStyle}" TargetType="{x:Type ToolBar}" />
+        <Style BasedOn="{StaticResource CommonColorStyle}" TargetType="{x:Type GridSplitter}" />
+        <Style BasedOn="{StaticResource CommonColorStyle}" TargetType="{x:Type StatusBar}" />
     </UserControl.Resources>
     <Grid IsEnabled="{Binding IsEnabled, Mode=OneWay}">
         <Grid.RowDefinitions>
@@ -42,7 +53,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ToolBar Style="{StaticResource CommonStyle}">
+        <ToolBar>
             <ToolBar.Resources>
                 <Style TargetType="{x:Type ToolBarPanel}">
                     <Setter Property="Orientation" Value="Vertical" />
@@ -50,41 +61,38 @@
             </ToolBar.Resources>
 
             <DockPanel>
-                <ToolBarPanel Orientation="Horizontal">
-                    <Label Style="{StaticResource CommonStyle}">
+                <ToolBarPanel Height="30" Orientation="Horizontal">
+                    <Label Height="25" VerticalContentAlignment="Center">
                         Message Types:
                     </Label>
                     <ComboBox
                         x:Name="SearchComboBox"
                         MinWidth="250"
+                        VerticalContentAlignment="Center"
                         extensions:FocusExtension.IsFocused="{Binding IsSearchInputFocused}"
                         IsEditable="True"
                         IsTextSearchEnabled="True"
                         ItemsSource="{Binding MessageTypes, Mode=OneWay}"
-                        Style="{StaticResource CommonStyle}"
                         Text="{Binding SearchText, Mode=TwoWay}" />
                     <Button
                         x:Name="SearchButton"
-                        Height="23"
                         Margin="5,0,0,0"
+                        VerticalContentAlignment="Center"
                         Command="{Binding SearchCommand}"
-                        IsDefault="True"
-                        Style="{StaticResource CommonStyle}">
+                        IsDefault="True">
                         Search
                     </Button>
                     <Button
                         x:Name="CancelButton"
-                        Height="23"
                         Margin="5,0,0,0"
+                        VerticalContentAlignment="Center"
                         Command="{Binding CancelCommand}"
-                        Style="{StaticResource CommonStyle}"
                         Visibility="{Binding OnSearching, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         Cancel
                     </Button>
                 </ToolBarPanel>
                 <ProgressBar
                     Width="150"
-                    Height="20"
                     Margin="0,0,10,0"
                     HorizontalAlignment="Right"
                     DockPanel.Dock="Right"
@@ -109,7 +117,10 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="0.5*" />
             </Grid.RowDefinitions>
-            <TextBlock Text="{Binding Errors}" Foreground="Red" Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"></TextBlock>
+            <TextBlock
+                Foreground="Red"
+                Text="{Binding Errors}"
+                Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -122,10 +133,12 @@
                     toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultPublicationItemCommand}"
                     FontFamily="Courier New"
                     ItemsSource="{Binding Publications, Mode=OneWay}"
-                    SelectedItem="{Binding CurrentPublication, Mode=OneWayToSource}"
-                    Style="{StaticResource CommonStyle}" />
+                    SelectedItem="{Binding CurrentPublication, Mode=OneWayToSource}" />
             </Grid>
-            <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch"></GridSplitter>
+            <GridSplitter
+                Grid.Row="2"
+                Height="5"
+                HorizontalAlignment="Stretch" />
             <Grid Grid.Row="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -138,15 +151,11 @@
                     toms:ItemsControlExtensions.DefaultItemCommand="{Binding ExecuteDefaultHandlerItemCommand}"
                     FontFamily="Courier New"
                     ItemsSource="{Binding Handlers, Mode=OneWay}"
-                    SelectedItem="{Binding CurrentHandler, Mode=OneWayToSource}"
-                    Style="{StaticResource CommonStyle}" />
+                    SelectedItem="{Binding CurrentHandler, Mode=OneWayToSource}" />
             </Grid>
         </Grid>
-        <StatusBar Grid.Row="2" Style="{StaticResource CommonStyle}">
-            <Label
-                x:Name="StatusLabel"
-                Content="{Binding Status, Mode=OneWay}"
-                Style="{StaticResource CommonStyle}" />
+        <StatusBar Grid.Row="2">
+            <Label x:Name="StatusLabel" Content="{Binding Status, Mode=OneWay}" />
         </StatusBar>
     </Grid>
 </UserControl>
