@@ -1,4 +1,5 @@
-﻿using CaliburnMicroMessageNavigator.Extensions;
+﻿using System.Linq;
+using CaliburnMicroMessageNavigator.Extensions;
 using Microsoft.CodeAnalysis;
 
 namespace CaliburnMicroMessageNavigator.ViewModels
@@ -9,6 +10,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
         {
             LineSpan = syntaxNodeOrToken.GetLocation().GetLineSpan();
 
+            Class = LineSpan.Path.Split('\\').Last();
             Content =
                 $"{LineSpan.Path.PadRight(maxFilePathLength ?? 100)} {LineSpan.Span.ToString().PadLeft(20)}{"".PadLeft(5)}{syntaxNodeOrToken.ToString().Truncate()}";
             ToolTip = syntaxNodeOrToken.ToString();

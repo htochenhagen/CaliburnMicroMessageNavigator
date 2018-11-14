@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Caliburn.Micro;
 using CaliburnMicroMessageNavigator.Events;
@@ -20,7 +21,8 @@ using TomsToolbox.Wpf;
 
 namespace CaliburnMicroMessageNavigator.ViewModels
 {
-    public class MessageNavigatorToolWindowControlViewModel : ObservableObject, IHandleWithTask<SourceCodeTextEventMessage>
+    public class MessageNavigatorToolWindowControlViewModel : ObservableObject,
+        IHandleWithTask<SourceCodeTextEventMessage>
     {
         private const int PageLimit = 10000;
         private readonly ScriptGlobals _scriptGlobals;
@@ -29,8 +31,10 @@ namespace CaliburnMicroMessageNavigator.ViewModels
         private ItemViewModel _currentPublication;
         private List<string> _errorList;
         private string _errors;
+        private string _excludeFilters;
         private ObservableCollection<ItemViewModel> _handlers;
         private bool _hasErrors;
+        private string _includeFilters;
         private bool _isEnabled;
         private bool _isSearchInputFocused;
         private ObservableCollection<string> _messageTypes;
@@ -75,6 +79,30 @@ namespace CaliburnMicroMessageNavigator.ViewModels
             {
                 _searchText = value;
                 OnPropertyChanged();
+            }
+        }
+
+        public string ExcludeFilters
+        {
+            get => _excludeFilters;
+            set
+            {
+                _excludeFilters = value;
+                OnPropertyChanged();
+                Filter();
+                Focus();
+            }
+        }
+
+        public string IncludeFilters
+        {
+            get => _includeFilters;
+            set
+            {
+                _includeFilters = value;
+                OnPropertyChanged();
+                Filter();
+                Focus();
             }
         }
 
@@ -143,6 +171,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
         public ICommand CancelCommand => new DelegateCommand(CanCancel, Cancel);
 
+        public ICommand ResetFilterCommand => new DelegateCommand(CanResetFilter, ResetFilter);
 
         public ICommand ExecuteDefaultPublicationItemCommand =>
             new DelegateCommand(CanExecuteDefaultPublicationItem, ExecuteDefaultPublicationItem);
@@ -213,6 +242,13 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
         public MessageNavigatorToolWindowState ToolWindowState { get; }
 
+        public async Task Handle(SourceCodeTextEventMessage message)
+        {
+            SearchText = message.Text;
+            MyPackage.CmmnEventAggregator.PublishOnCurrentThread(new FocusToolWindowEventMessage());
+            await SearchAsync();
+        }
+
         private bool CanSearch()
         {
             return IsEnabled && !OnSearching;
@@ -223,6 +259,7 @@ namespace CaliburnMicroMessageNavigator.ViewModels
         {
             try
             {
+                Status = "Searching ...";
                 OnSearching = true;
                 var cancellationToken = ResetCancellationToken();
 
@@ -234,22 +271,33 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
                 await Task.WhenAll(publicationsSearchTask, handlersSearchTask);
 
-                var publicationsCount = publicationsSearchTask.Result;
-                var handlersCount = handlersSearchTask.Result;
-
-                Status = $"{publicationsCount} publications and {handlersCount} handlers found.";
+                Filter();
             }
             finally
             {
                 OnSearching = false;
-                IsSearchInputFocused = false;
-                IsSearchInputFocused = true;
+                Focus();
             }
+        }
+
+        private void Focus()
+        {
+            IsSearchInputFocused = false;
+            IsSearchInputFocused = true;
+        }
+
+        private void SetCountResultsToStatus()
+        {
+            var shownPublicationsCount = CollectionViewSource.GetDefaultView(Publications).Cast<object>().Count();
+            var shownHandlersCount = CollectionViewSource.GetDefaultView(Handlers).Cast<object>().Count();
+
+            Status =
+                $"{Publications.Count} publications and {Handlers.Count} handlers found, but shown after filtering {shownPublicationsCount} publications and and {shownHandlersCount} handlers";
         }
 
         private bool CanCancel()
         {
-            return IsEnabled && _onSearching;
+            return IsEnabled && OnSearching;
         }
 
         private void Cancel()
@@ -262,6 +310,76 @@ namespace CaliburnMicroMessageNavigator.ViewModels
                 Publications.Remove(itemViewModel);
             foreach (var itemViewModel in Handlers.Where(x => x is PageRequestItemViewModel).ToArray())
                 Handlers.Remove(itemViewModel);
+        }
+
+        private bool CanResetFilter()
+        {
+            return IsEnabled && !OnSearching &&
+                   (!string.IsNullOrWhiteSpace(ExcludeFilters) || !string.IsNullOrWhiteSpace(IncludeFilters));
+        }
+
+        private void ResetFilter()
+        {
+            ExcludeFilters = null;
+            IncludeFilters = null;
+            SetCountResultsToStatus();
+            Focus();
+        }
+
+        private void Filter()
+        {
+            var publicationsView = CollectionViewSource.GetDefaultView(Publications);
+            var handlersView = CollectionViewSource.GetDefaultView(Handlers);
+            if (string.IsNullOrWhiteSpace(ExcludeFilters) && string.IsNullOrWhiteSpace(IncludeFilters))
+            {
+                publicationsView.Filter = null;
+                handlersView.Filter = null;
+            }
+            else
+            {
+                publicationsView.Filter = FilterCollections;
+                handlersView.Filter = FilterCollections;
+            }
+
+            SetCountResultsToStatus();
+        }
+
+        private bool FilterCollections(object obj)
+        {
+            return FilterExcludesCollection(obj) && FilterIncludesCollection(obj);
+        }
+
+        private bool FilterExcludesCollection(object obj)
+        {
+            if (string.IsNullOrWhiteSpace(ExcludeFilters)) return true;
+
+            if (obj is ItemViewModel item)
+            {
+                var excludeFiltersParts = ExcludeFilters.Split('|');
+                foreach (var excludeFiltersPart in excludeFiltersParts)
+                    if (item.Class.ToLowerInvariant().Contains(excludeFiltersPart.ToLowerInvariant()))
+                        return false;
+            }
+
+            return true;
+        }
+
+        private bool FilterIncludesCollection(object obj)
+        {
+            if (string.IsNullOrWhiteSpace(IncludeFilters)) return true;
+
+            var result = false;
+            if (obj is ItemViewModel item)
+            {
+                var includeFiltersParts = IncludeFilters.Split('|');
+                foreach (var includeFiltersPart in includeFiltersParts)
+                    if (!item.Class.ToLowerInvariant().Contains(includeFiltersPart.ToLowerInvariant()))
+                        return false;
+                    else
+                        result = true;
+            }
+
+            return result;
         }
 
         private bool CanExecuteDefaultPublicationItem()
@@ -584,13 +702,6 @@ namespace CaliburnMicroMessageNavigator.ViewModels
 
             // If not we wrap it in an Enumerable with a single item
             return new[] {input};
-        }
-
-        public async Task Handle(SourceCodeTextEventMessage message)
-        {
-            SearchText = message.Text;
-            MyPackage.CmmnEventAggregator.PublishOnCurrentThread(new FocusToolWindowEventMessage());
-            await SearchAsync();
         }
     }
 }

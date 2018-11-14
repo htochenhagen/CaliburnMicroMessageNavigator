@@ -7,8 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
     xmlns:toms="urn:TomsToolbox"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignWidth="1200"
     mc:Ignorable="d">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -27,9 +28,11 @@
             BasedOn="{StaticResource CommonColorStyle}"
             TargetType="Control">
             <Setter Property="Height" Value="26" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
 
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type TextBox}" />
+        <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type xctk:WatermarkTextBox}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type Button}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type Label}" />
         <Style BasedOn="{StaticResource CommonStyle}" TargetType="{x:Type CheckBox}" />
@@ -62,13 +65,12 @@
 
             <DockPanel>
                 <ToolBarPanel Height="30" Orientation="Horizontal">
-                    <Label Height="25" VerticalContentAlignment="Center">
+                    <Label>
                         Message Types:
                     </Label>
                     <ComboBox
                         x:Name="SearchComboBox"
                         MinWidth="250"
-                        VerticalContentAlignment="Center"
                         extensions:FocusExtension.IsFocused="{Binding IsSearchInputFocused}"
                         IsEditable="True"
                         IsTextSearchEnabled="True"
@@ -77,7 +79,6 @@
                     <Button
                         x:Name="SearchButton"
                         Margin="5,0,0,0"
-                        VerticalContentAlignment="Center"
                         Command="{Binding SearchCommand}"
                         IsDefault="True">
                         Search
@@ -85,10 +86,39 @@
                     <Button
                         x:Name="CancelButton"
                         Margin="5,0,0,0"
-                        VerticalContentAlignment="Center"
                         Command="{Binding CancelCommand}"
                         Visibility="{Binding OnSearching, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         Cancel
+                    </Button>
+                    <Label Margin="15,0,0,0">
+                        Class Exclude Filter:
+                    </Label>
+                    <xctk:WatermarkTextBox
+                        x:Name="ExcludeFilterTextBox"
+                        Width="Auto"
+                        MinWidth="100"
+                        Text="{Binding ExcludeFilters, Mode=TwoWay, Delay=1000, UpdateSourceTrigger=PropertyChanged}"
+                        ToolTip="Defines pipe separated exclude filters here"
+                        Margin="5,0,0,0"
+                        Style="{StaticResource CommonStyle}"
+                        Watermark="e.g. '.vb|.xaml'" />
+                    <Label Margin="5,0,0,0">
+                        Class Include Filter:
+                    </Label>
+                    <xctk:WatermarkTextBox
+                        x:Name="IncludeFilterTextBox"
+                        Width="Auto"
+                        MinWidth="100"
+                        Text="{Binding IncludeFilters, Mode=TwoWay, Delay=1000, UpdateSourceTrigger=PropertyChanged}"
+                        ToolTip="Defines pipe separated include filters here"
+                        Margin="5,0,0,0"
+                        Style="{StaticResource CommonStyle}"
+                        Watermark="e.g. '.cs|command'" />
+                    <Button
+                        x:Name="ResetFilterButton"
+                        Margin="5,0,0,0"
+                        Command="{Binding ResetFilterCommand}">
+                        Reset Filters
                     </Button>
                 </ToolBarPanel>
                 <ProgressBar

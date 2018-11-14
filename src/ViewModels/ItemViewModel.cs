@@ -6,6 +6,17 @@ namespace CaliburnMicroMessageNavigator.ViewModels
     {
         private string _content;
         private string _toolTip;
+        private string _class;
+
+        public string Class
+        {
+            get => _class;
+            set
+            {
+                _class = value;
+                OnPropertyChanged();
+            }
+        }
 
         public string Content
         {

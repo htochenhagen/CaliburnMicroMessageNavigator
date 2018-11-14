@@ -64,6 +64,12 @@ namespace CaliburnMicroMessageNavigator
                 var ret = Assembly.LoadFrom(path);
                 return ret;
             }
+            if (args.Name.ToLower().Contains("xceed.wpf.toolkit"))
+            {
+                path = Path.Combine(path ?? throw new InvalidOperationException(), "xceed.wpf.toolkit.dll");
+                var ret = Assembly.LoadFrom(path);
+                return ret;
+            }
 
             return null;
         }
