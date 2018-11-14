@@ -61,7 +61,6 @@
     <Compile Include="Extensions\ExceptionExtensions.cs" />
     <Compile Include="Extensions\FocusExtension.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Mvvm\AsyncCommand.cs" />
     <Compile Include="Mvvm\AsyncCommandBase.cs" />
     <Compile Include="Mvvm\IAsyncCommand.cs" />
