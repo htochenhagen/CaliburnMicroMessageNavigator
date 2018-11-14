@@ -135,6 +135,7 @@
             Grid.ColumnSpan="2"
             Margin="146,51"
             HorizontalAlignment="Center"
+            Height="Auto"
             VerticalAlignment="Center"
             FontSize="48"
             Visibility="{Binding IsEnabled, Converter={StaticResource InvertedBooleanToVisibilityConverter}, Mode=OneWay}">
